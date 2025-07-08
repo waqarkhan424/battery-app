@@ -15,20 +15,14 @@ type IconSymbolName = keyof typeof MAPPING;
  */
 
 
-// const MAPPING = {
-//   'house.fill': 'home',
-//   'paperplane.fill': 'send',
-//   'chevron.left.forwardslash.chevron.right': 'code',
-//   'chevron.right': 'chevron-right',
-// } as IconMapping;
-
 
 const MAPPING = {
   'house.fill': 'home',
-  'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
   'battery.100': 'battery-full',
+  'iphone.landscape': 'devices',
+  'gearshape.fill': 'settings',
 } as IconMapping;
 
 

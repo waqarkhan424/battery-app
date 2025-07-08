@@ -5,7 +5,7 @@ import { StyleSheet } from 'react-native';
 export default function HomeScreen() {
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">Welcome to Home Screen</ThemedText>
+      <ThemedText type="title">Home Screen</ThemedText>
     </ThemedView>
   );
 }
