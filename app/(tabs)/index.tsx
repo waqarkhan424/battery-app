@@ -3,7 +3,7 @@ import { fetchVideosFromGitHub, VideoItem } from '@/lib/fetchVideos';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
-const categories = ['animal', 'cartoon', 'circle']; // add more here later
+const categories = ['animal', 'cartoon', 'circle'];
 
 export default function HomeScreen() {
   const [videosByCategory, setVideosByCategory] = useState<Record<string, VideoItem[]>>({});
