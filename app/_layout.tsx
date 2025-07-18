@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
 export default function Layout() {
@@ -13,12 +13,30 @@ export default function Layout() {
           borderTopColor: '#1e293b', // Slate-800
         },
         tabBarIcon: ({ color, size }) => {
-          let iconName: any = 'home';
-          if (route.name === 'index') iconName = 'home';
-          if (route.name === 'battery') iconName = 'battery-half';
-          if (route.name === 'device') iconName = 'phone-portrait';
-          if (route.name === 'settings') iconName = 'settings';
-          return <Ionicons name={iconName} size={size} color={color} />;
+          if (route.name === 'index') {
+            return <Ionicons name="home" size={size} color={color} />;
+          }
+          if (route.name === 'battery') {
+            return (
+              <MaterialCommunityIcons
+                name="battery"
+                size={size}
+                color={color}
+              />
+            ); // stand-up battery icon
+          }
+          if (route.name === 'device') {
+            return (
+              <MaterialCommunityIcons
+                name="cellphone"
+                size={size}
+                color={color}
+              />
+            ); // better "device" icon
+          }
+          if (route.name === 'settings') {
+            return <Ionicons name="settings" size={size} color={color} />;
+          }
         },
       })}
     >
