@@ -1,9 +1,36 @@
-import { Text, View } from 'react-native';
+import VideoCard from '@/components/VideoCard';
+import { fetchVideosFromGitHub, VideoItem } from '@/lib/fetchVideos';
+import { useEffect, useState } from 'react';
+import { ScrollView, Text, View } from 'react-native';
+
+const categories = ['animal', 'cartoon', 'circle']; // add more here later
 
 export default function HomeScreen() {
+  const [videosByCategory, setVideosByCategory] = useState<Record<string, VideoItem[]>>({});
+
+  useEffect(() => {
+    const load = async () => {
+      const data: Record<string, VideoItem[]> = {};
+      for (const category of categories) {
+        data[category] = await fetchVideosFromGitHub(category);
+      }
+      setVideosByCategory(data);
+    };
+    load();
+  }, []);
+
   return (
-    <View className="flex-1 items-center justify-center bg-slate-900">
-      <Text className="text-cyan-400 text-xl font-bold">Home Screen</Text>
-    </View>
+    <ScrollView className="flex-1 bg-background px-4 pt-6">
+      {categories.map((category) => (
+        <View key={category} className="mb-6">
+          <Text className="text-white text-xl font-bold mb-2 capitalize">{category}</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {videosByCategory[category]?.map((video) => (
+              <VideoCard key={video.id} url={video.url} />
+            ))}
+          </ScrollView>
+        </View>
+      ))}
+    </ScrollView>
   );
 }
