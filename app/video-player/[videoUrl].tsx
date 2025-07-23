@@ -1,0 +1,21 @@
+import { ResizeMode, Video } from 'expo-av';
+import { useLocalSearchParams } from 'expo-router';
+import { View } from 'react-native';
+
+export default function VideoPlayer() {
+  const { videoUrl } = useLocalSearchParams<{ videoUrl: string }>();
+console.log("videoUrl::::::::::::::", videoUrl)
+  if (!videoUrl) return null;
+
+  return (
+    <View className="flex-1 bg-black justify-center items-center">
+      <Video
+        source={{ uri: decodeURIComponent(videoUrl) }}
+        style={{ width: '100%', height: '100%' }}
+        resizeMode={ResizeMode.CONTAIN}
+        useNativeControls
+        shouldPlay
+      />
+    </View>
+  );
+}
