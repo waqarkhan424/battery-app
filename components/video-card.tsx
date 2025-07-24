@@ -42,12 +42,12 @@ export default function VideoCard({ url, thumbnail }: Props) {
 
   return (
     <Pressable onPress={handlePress} className="active:scale-95 transition duration-100">
-      <View className="w-32 h-40 rounded-lg overflow-hidden bg-black mr-3 relative shadow-md">
-          <Image
-            source={{ uri: thumbnail }}
-            style={{ width: '100%', height: '100%' }}
-            resizeMode="cover"
-          />
+      <View className="w-32  h-48 rounded-lg overflow-hidden bg-black mr-3 relative shadow-md">
+        <Image
+          source={{ uri: thumbnail }}
+          style={{ width: '100%', height: '85%', backgroundColor: 'black' }}
+          resizeMode="cover"
+        />
 
         <View className="absolute bottom-2 left-0 right-0 items-center">
           {downloading ? (

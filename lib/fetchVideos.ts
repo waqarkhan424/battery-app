@@ -17,9 +17,12 @@ export async function fetchVideosFromGitHub(folder: string): Promise<VideoItem[]
       .filter((item: any) => item.name.endsWith('.mp4'))
       .map((item: any) => {
         const nameWithoutExt = item.name.replace('.mp4', '');
+
         const thumbnailItem = data.find((f: any) =>
-          f.name === `${nameWithoutExt}-thumbnail.jpg`
+          f.name === `${nameWithoutExt}-thumbnail.jpg` ||
+          f.name === `${nameWithoutExt}-thumbnail.png`
         );
+
         return {
           id: `${folder}-${item.name}`,
           url: item.download_url,
