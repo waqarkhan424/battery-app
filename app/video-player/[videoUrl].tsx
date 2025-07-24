@@ -4,7 +4,6 @@ import { View } from 'react-native';
 
 export default function VideoPlayer() {
   const { videoUrl } = useLocalSearchParams<{ videoUrl: string }>();
-console.log("videoUrl::::::::::::::", videoUrl)
   if (!videoUrl) return null;
 
   return (
