@@ -25,9 +25,11 @@ export default function HomeScreen() {
         <View key={category} className="mb-6">
           <Text className="text-white text-xl font-bold mb-2 capitalize">{category}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+           
             {videosByCategory[category]?.map((video) => (
-              <VideoCard key={video.id} url={video.url} />
-            ))}
+  <VideoCard key={video.id} url={video.url} thumbnail={video.thumbnail} />
+))}
+
           </ScrollView>
         </View>
       ))}
