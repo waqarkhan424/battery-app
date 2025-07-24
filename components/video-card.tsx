@@ -42,20 +42,20 @@ export default function VideoCard({ url, thumbnail }: Props) {
 
   return (
     <Pressable onPress={handlePress} className="active:scale-95 transition duration-100">
-      <View className="w-32  h-48 rounded-lg overflow-hidden bg-black mr-3 relative shadow-md">
+      <View className="w-32 h-48 rounded-lg overflow-hidden bg-black mr-3 relative shadow-md">
         <Image
           source={{ uri: thumbnail }}
           style={{ width: '100%', height: '85%', backgroundColor: 'black' }}
           resizeMode="cover"
         />
 
-        <View className="absolute bottom-2 left-0 right-0 items-center">
+        <View className="absolute bottom-2 right-2">
           {downloading ? (
             <ActivityIndicator size="small" color="white" />
           ) : (
             <Ionicons
               name={localUri ? 'play-circle-outline' : 'cloud-download-outline'}
-              size={24}
+              size={20}
               color="white"
               style={{ opacity: 0.8 }}
             />
