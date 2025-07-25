@@ -71,7 +71,7 @@ export default function SettingsScreen() {
       {/* Fixed Header */}
       <View className="px-4 py-4 bg-background border-b border-surface">
         <Text className="text-white text-2xl font-bold text-center">
-          Settings
+          Settingsss
         </Text>
       </View>
 

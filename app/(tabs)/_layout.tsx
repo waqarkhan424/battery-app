@@ -8,7 +8,7 @@ export default function Layout() {
       screenOptions={({ route }) => ({
         tabBarActiveTintColor: '#22d3ee', // Cyan-400
         tabBarInactiveTintColor: '#94a3b8', // Slate-400
-        headerShown: false,
+        // headerShown: false,
         tabBarStyle: {
           backgroundColor: '#0f172a', // Slate-900
           borderTopColor: '#1e293b', // Slate-800
