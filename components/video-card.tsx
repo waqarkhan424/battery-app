@@ -77,14 +77,16 @@ export default function VideoCard({ url, thumbnail }: Props) {
               <ActivityIndicator size="small" color="white" />
             </>
           ) : (
-            <View className="w-full items-end">
-              <Ionicons
-                name={localUri ? 'play-circle-outline' : 'cloud-download-outline'}
-                size={20}
-                color="white"
-                style={{ opacity: 0.8 }}
-              />
-            </View>
+            !localUri && (
+              <View className="w-full items-end">
+                <Ionicons
+                  name="cloud-download-outline"
+                  size={20}
+                  color="white"
+                  style={{ opacity: 0.8 }}
+                />
+              </View>
+            )
           )}
         </View>
       </View>
