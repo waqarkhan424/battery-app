@@ -70,20 +70,10 @@ export default function VideoCard({ url, thumbnail }: Props) {
           resizeMode="cover"
         />
 
-        {/* Optional: Download progress bar */}
-        {downloading && (
-          <View className="absolute bottom-[28px] left-0 w-full h-1 bg-white/20">
-            <View
-              className="h-full bg-cyan-400"
-              style={{ width: `${downloadProgress}%` }}
-            />
-          </View>
-        )}
-
         <View className="absolute bottom-2 right-2 flex-row items-center">
           {downloading ? (
             <>
-              <Text className="text-white text-xs mr-1">{downloadProgress}%</Text>
+              <Text className="text-white text-xs mr-2">{downloadProgress}%</Text>
               <ActivityIndicator size="small" color="white" />
             </>
           ) : (
