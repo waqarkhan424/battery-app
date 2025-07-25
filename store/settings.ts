@@ -13,7 +13,7 @@ type SettingsState = {
 };
 
 export const useSettingsStore = create<SettingsState>((set) => ({
-  enableAnimations: true,
+  enableAnimations: true,                //  default ON
   hideBatteryPercentage: false,
   keepServiceAlive: false,
   overlayPermissionEnabled: false,
