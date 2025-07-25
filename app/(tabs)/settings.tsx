@@ -1,6 +1,7 @@
 import { useSettingsStore } from '@/store/settings';
 import { Entypo, Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
   const {
@@ -56,76 +57,66 @@ export default function SettingsScreen() {
   );
 
   return (
-    <ScrollView className="flex-1 bg-background p-4">
-      <Text className="text-white text-2xl font-bold mb-6 text-center">Settings</Text>
+    <SafeAreaView className="flex-1 bg-background">
+      <ScrollView
+        className="flex-1 px-4 py-4"
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+        <Text className="text-white text-2xl font-bold mb-6 text-center">
+          Settings
+        </Text>
 
-      {/* Toggles */}
-      <ToggleRow
-        label="Enable Animations"
-        value={enableAnimations}
-        onToggle={() => setEnableAnimations(!enableAnimations)}
-      />
-      <ToggleRow
-        label="Hide battery percentage"
-        value={hideBatteryPercentage}
-        onToggle={() => setHideBatteryPercentage(!hideBatteryPercentage)}
-      />
-      <ToggleRow
-        label="Keep service always alive"
-        value={keepServiceAlive}
-        onToggle={() => setKeepServiceAlive(!keepServiceAlive)}
-      />
-      <ToggleRow
-        label="Overlay permission enabled"
-        value={overlayPermissionEnabled}
-        onToggle={() => setOverlayPermissionEnabled(!overlayPermissionEnabled)}
-      />
+        {/* Toggles */}
+        <ToggleRow
+          label="Enable Animations"
+          value={enableAnimations}
+          onToggle={() => setEnableAnimations(!enableAnimations)}
+        />
+        <ToggleRow
+          label="Hide battery percentage"
+          value={hideBatteryPercentage}
+          onToggle={() => setHideBatteryPercentage(!hideBatteryPercentage)}
+        />
+        <ToggleRow
+          label="Keep service always alive"
+          value={keepServiceAlive}
+          onToggle={() => setKeepServiceAlive(!keepServiceAlive)}
+        />
+        <ToggleRow
+          label="Overlay permission enabled"
+          value={overlayPermissionEnabled}
+          onToggle={() =>
+            setOverlayPermissionEnabled(!overlayPermissionEnabled)
+          }
+        />
 
-      {/* Bottom actions */}
-      <LinkRow
-        icon={<Entypo name="share" size={22} color="#22d3ee" />}
-        label="Share"
-        onPress={() => {
-          // later add Share API
-          console.log('Share Pressed');
-        }}
-      />
-
-      <LinkRow
-        icon={<Ionicons name="star-outline" size={22} color="#22d3ee" />}
-        label="Rate"
-        onPress={() => {
-          // later add Play Store link
-          console.log('Rate Pressed');
-        }}
-      />
-
-      <LinkRow
-        icon={<Feather name="file-text" size={22} color="#22d3ee" />}
-        label="Privacy Policy"
-        onPress={() => {
-          // replace with your link later
-          Linking.openURL('https://www.example.com/privacy');
-        }}
-      />
-
-      <LinkRow
-        icon={<Feather name="file" size={22} color="#22d3ee" />}
-        label="Terms & Conditions"
-        onPress={() => {
-          // replace with your link later
-          Linking.openURL('https://www.example.com/terms');
-        }}
-      />
-
-      <LinkRow
-        icon={<Feather name="headphones" size={22} color="#22d3ee" />}
-        label="Support"
-        onPress={() => {
-          // replace with your contact method later
-          console.log('Support Pressed');
-        }}
-      />
-    </ScrollView>
+        {/* Bottom actions */}
+        <LinkRow
+          icon={<Entypo name="share" size={22} color="#22d3ee" />}
+          label="Share"
+          onPress={() => console.log('Share Pressed')}
+        />
+        <LinkRow
+          icon={<Ionicons name="star-outline" size={22} color="#22d3ee" />}
+          label="Rate"
+          onPress={() => console.log('Rate Pressed')}
+        />
+        <LinkRow
+          icon={<Feather name="file-text" size={22} color="#22d3ee" />}
+          label="Privacy Policy"
+          onPress={() => Linking.openURL('https://www.example.com/privacy')}
+        />
+        <LinkRow
+          icon={<Feather name="file" size={22} color="#22d3ee" />}
+          label="Terms & Conditions"
+          onPress={() => Linking.openURL('https://www.example.com/terms')}
+        />
+        <LinkRow
+          icon={<Feather name="headphones" size={22} color="#22d3ee" />}
+          label="Support"
+          onPress={() => console.log('Support Pressed')}
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
