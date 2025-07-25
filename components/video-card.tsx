@@ -70,19 +70,21 @@ export default function VideoCard({ url, thumbnail }: Props) {
           resizeMode="cover"
         />
 
-        <View className="absolute bottom-2 right-2 flex-row items-center">
+        <View className="absolute bottom-2 left-0 right-0 px-2 flex-row justify-between items-center">
           {downloading ? (
             <>
-              <Text className="text-white text-xs mr-2">{downloadProgress}%</Text>
+              <Text className="text-white text-xs">{downloadProgress}%</Text>
               <ActivityIndicator size="small" color="white" />
             </>
           ) : (
-            <Ionicons
-              name={localUri ? 'play-circle-outline' : 'cloud-download-outline'}
-              size={20}
-              color="white"
-              style={{ opacity: 0.8 }}
-            />
+            <View className="w-full items-end">
+              <Ionicons
+                name={localUri ? 'play-circle-outline' : 'cloud-download-outline'}
+                size={20}
+                color="white"
+                style={{ opacity: 0.8 }}
+              />
+            </View>
           )}
         </View>
       </View>
