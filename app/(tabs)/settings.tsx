@@ -30,7 +30,7 @@ export default function SettingsScreen() {
     value: boolean;
     onToggle: () => void;
   }) => (
-    <View className="flex-row justify-between items-center bg-surface p-4 rounded mb-4">
+    <View className="flex-row justify-between items-center bg-surface p-4 rounded-lg mb-4">
       <Text className="text-white text-base">{label}</Text>
       <Pressable onPress={onToggle}>
         <MaterialCommunityIcons
@@ -57,7 +57,7 @@ export default function SettingsScreen() {
   }) => (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center justify-between bg-surface px-4 py-3 rounded mb-3"
+      className="flex-row items-center justify-between bg-surface px-4 py-3 rounded-lg mb-3"
     >
       <View className="flex-row items-center">
         {icon}
@@ -113,16 +113,12 @@ export default function SettingsScreen() {
           onPress={() => console.log('Share Pressed')}
         />
         <LinkRow
-          icon={
-            <Ionicons name="star-outline" size={22} color="#22d3ee" />
-          }
+          icon={<Ionicons name="star-outline" size={22} color="#22d3ee" />}
           label="Rate"
           onPress={() => console.log('Rate Pressed')}
         />
         <LinkRow
-          icon={
-            <Feather name="file-text" size={22} color="#22d3ee" />
-          }
+          icon={<Feather name="file-text" size={22} color="#22d3ee" />}
           label="Privacy Policy"
           onPress={() =>
             Linking.openURL('https://www.example.com/privacy')
@@ -136,9 +132,7 @@ export default function SettingsScreen() {
           }
         />
         <LinkRow
-          icon={
-            <Feather name="headphones" size={22} color="#22d3ee" />
-          }
+          icon={<Feather name="headphones" size={22} color="#22d3ee" />}
           label="Support"
           onPress={() => console.log('Support Pressed')}
         />
