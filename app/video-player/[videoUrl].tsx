@@ -19,8 +19,4 @@ export default function VideoPlayer() {
   );
 }
 
-// This removes the title from the header
-VideoPlayer.options = {
-  title: '',
-  headerShown: false,
-};
+
