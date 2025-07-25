@@ -1,4 +1,3 @@
-
 import { Ionicons } from '@expo/vector-icons';
 import { ResizeMode, Video } from 'expo-av';
 import { useLocalSearchParams } from 'expo-router';
@@ -14,7 +13,7 @@ export default function VideoPlayer() {
     const updateTime = () => {
       const now = new Date();
 
-      // Format Time (e.g., 08:13)
+      // Format Time (e.g., 09:27)
       const time = now.toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
@@ -32,10 +31,21 @@ export default function VideoPlayer() {
       setCurrentDate(date);
     };
 
-    updateTime(); // Set time immediately
-    const interval = setInterval(updateTime, 60 * 1000); // Update every 60 sec
+    updateTime(); // Set immediately on mount
 
-    return () => clearInterval(interval); // Clean up on unmount
+    const now = new Date();
+    const msToNextMinute = (60 - now.getSeconds()) * 1000;
+
+    // Start interval at next full minute
+    const timeout = setTimeout(() => {
+      updateTime(); // Align on the minute
+      const interval = setInterval(updateTime, 60000);
+      // Save interval to clear if needed
+      const cleanup = () => clearInterval(interval);
+      // Store cleanup in ref or outer scope if needed
+    }, msToNextMinute);
+
+    return () => clearTimeout(timeout); // Cleanup timeout
   }, []);
 
   if (!videoUrl) return null;
