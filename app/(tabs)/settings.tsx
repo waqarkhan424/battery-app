@@ -1,10 +1,9 @@
-// File: app/(tabs)/settings.tsx
 import { useSettingsStore } from '@/store/settings';
 import {
-    Entypo,
-    Feather,
-    Ionicons,
-    MaterialCommunityIcons,
+  Entypo,
+  Feather,
+  Ionicons,
+  MaterialCommunityIcons,
 } from '@expo/vector-icons';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
