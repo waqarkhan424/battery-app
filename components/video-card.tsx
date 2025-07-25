@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
+  Text,
   View,
 } from 'react-native';
 
@@ -17,6 +18,7 @@ type Props = {
 export default function VideoCard({ url, thumbnail }: Props) {
   const [localUri, setLocalUri] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<number>(0);
 
   const fileName = url.split('/').pop();
   const fileUri = `${FileSystem.documentDirectory}${fileName}`;
@@ -29,14 +31,33 @@ export default function VideoCard({ url, thumbnail }: Props) {
       });
     } else {
       setDownloading(true);
-      const { uri } = await FileSystem.downloadAsync(url, fileUri);
-      setLocalUri(uri);
-      setDownloading(false);
+      setDownloadProgress(0);
 
-      router.push({
-        pathname: '/video-player/[videoUrl]',
-        params: { videoUrl: encodeURIComponent(uri) },
-      });
+      const downloadResumable = FileSystem.createDownloadResumable(
+        url,
+        fileUri,
+        {},
+        (progress) => {
+          const percentage =
+            progress.totalBytesWritten / progress.totalBytesExpectedToWrite;
+          setDownloadProgress(Math.round(percentage * 100));
+        }
+      );
+
+      try {
+        const result = await downloadResumable.downloadAsync();
+        if (result && result.uri) {
+          setLocalUri(result.uri);
+          router.push({
+            pathname: '/video-player/[videoUrl]',
+            params: { videoUrl: encodeURIComponent(result.uri) },
+          });
+        }
+      } catch (error) {
+        console.error('Download failed:', error);
+      } finally {
+        setDownloading(false);
+      }
     }
   };
 
@@ -49,9 +70,22 @@ export default function VideoCard({ url, thumbnail }: Props) {
           resizeMode="cover"
         />
 
-        <View className="absolute bottom-2 right-2">
+        {/* Optional: Download progress bar */}
+        {downloading && (
+          <View className="absolute bottom-[28px] left-0 w-full h-1 bg-white/20">
+            <View
+              className="h-full bg-cyan-400"
+              style={{ width: `${downloadProgress}%` }}
+            />
+          </View>
+        )}
+
+        <View className="absolute bottom-2 right-2 flex-row items-center">
           {downloading ? (
-            <ActivityIndicator size="small" color="white" />
+            <>
+              <Text className="text-white text-xs mr-1">{downloadProgress}%</Text>
+              <ActivityIndicator size="small" color="white" />
+            </>
           ) : (
             <Ionicons
               name={localUri ? 'play-circle-outline' : 'cloud-download-outline'}
