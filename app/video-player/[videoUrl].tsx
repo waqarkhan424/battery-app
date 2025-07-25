@@ -1,3 +1,4 @@
+
 import { Ionicons } from '@expo/vector-icons';
 import { ResizeMode, Video } from 'expo-av';
 import { useLocalSearchParams } from 'expo-router';
@@ -10,24 +11,31 @@ export default function VideoPlayer() {
   const [currentDate, setCurrentDate] = useState('');
 
   useEffect(() => {
-    const now = new Date();
+    const updateTime = () => {
+      const now = new Date();
 
-    // Format Time (e.g., 08:13)
-    const time = now.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+      // Format Time (e.g., 08:13)
+      const time = now.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
 
-    // Format Date (e.g., Friday 25 July 2025)
-    const date = now.toLocaleDateString('en-GB', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
+      // Format Date (e.g., Friday 25 July 2025)
+      const date = now.toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      });
 
-    setCurrentTime(time);
-    setCurrentDate(date);
+      setCurrentTime(time);
+      setCurrentDate(date);
+    };
+
+    updateTime(); // Set time immediately
+    const interval = setInterval(updateTime, 60 * 1000); // Update every 60 sec
+
+    return () => clearInterval(interval); // Clean up on unmount
   }, []);
 
   if (!videoUrl) return null;
