@@ -1,5 +1,5 @@
 import VideoCard from '@/components/video-card';
-import { fetchVideosFromGitHub, VideoItem } from '@/lib/fetchVideos';
+import { fetchVideosFromGitHub, VideoItem } from '@/lib/fetch-videos';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
