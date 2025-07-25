@@ -1,5 +1,11 @@
+// File: app/(tabs)/settings.tsx
 import { useSettingsStore } from '@/store/settings';
-import { Entypo, Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+    Entypo,
+    Feather,
+    Ionicons,
+    MaterialCommunityIcons,
+} from '@expo/vector-icons';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -28,7 +34,11 @@ export default function SettingsScreen() {
       <Text className="text-white text-base">{label}</Text>
       <Pressable onPress={onToggle}>
         <MaterialCommunityIcons
-          name={value ? 'toggle-switch-outline' : 'toggle-switch-off-outline'}
+          name={
+            value
+              ? 'toggle-switch-outline'
+              : 'toggle-switch-off-outline'
+          }
           size={34}
           color={value ? '#22d3ee' : '#94a3b8'}
         />
@@ -58,14 +68,18 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <ScrollView
-        className="flex-1 px-4 py-4"
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        <Text className="text-white text-2xl font-bold mb-6 text-center">
+      {/* Fixed Header */}
+      <View className="px-4 py-4 bg-background border-b border-surface">
+        <Text className="text-white text-2xl font-bold text-center">
           Settings
         </Text>
+      </View>
 
+      {/* Scrollable Content */}
+      <ScrollView
+        className="flex-1 px-4 pt-4"
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
         {/* Toggles */}
         <ToggleRow
           label="Enable Animations"
@@ -75,7 +89,9 @@ export default function SettingsScreen() {
         <ToggleRow
           label="Hide battery percentage"
           value={hideBatteryPercentage}
-          onToggle={() => setHideBatteryPercentage(!hideBatteryPercentage)}
+          onToggle={() =>
+            setHideBatteryPercentage(!hideBatteryPercentage)
+          }
         />
         <ToggleRow
           label="Keep service always alive"
@@ -97,22 +113,32 @@ export default function SettingsScreen() {
           onPress={() => console.log('Share Pressed')}
         />
         <LinkRow
-          icon={<Ionicons name="star-outline" size={22} color="#22d3ee" />}
+          icon={
+            <Ionicons name="star-outline" size={22} color="#22d3ee" />
+          }
           label="Rate"
           onPress={() => console.log('Rate Pressed')}
         />
         <LinkRow
-          icon={<Feather name="file-text" size={22} color="#22d3ee" />}
+          icon={
+            <Feather name="file-text" size={22} color="#22d3ee" />
+          }
           label="Privacy Policy"
-          onPress={() => Linking.openURL('https://www.example.com/privacy')}
+          onPress={() =>
+            Linking.openURL('https://www.example.com/privacy')
+          }
         />
         <LinkRow
           icon={<Feather name="file" size={22} color="#22d3ee" />}
           label="Terms & Conditions"
-          onPress={() => Linking.openURL('https://www.example.com/terms')}
+          onPress={() =>
+            Linking.openURL('https://www.example.com/terms')
+          }
         />
         <LinkRow
-          icon={<Feather name="headphones" size={22} color="#22d3ee" />}
+          icon={
+            <Feather name="headphones" size={22} color="#22d3ee" />
+          }
           label="Support"
           onPress={() => console.log('Support Pressed')}
         />
