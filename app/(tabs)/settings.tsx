@@ -69,9 +69,9 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       {/* Fixed Header */}
-      <View className="px-4 py-4 bg-background border-b border-surface">
+      <View className="px-4 py-4 bg-background border-surface">
         <Text className="text-white text-2xl font-bold text-center">
-          Settingsss
+          Settings
         </Text>
       </View>
 
