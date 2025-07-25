@@ -1,5 +1,6 @@
 import { useSettingsStore } from '@/store/settings';
-import { ScrollView, Switch, Text, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 
 export default function SettingsScreen() {
   const { enableAnimations, setEnableAnimations } = useSettingsStore();
@@ -11,12 +12,21 @@ export default function SettingsScreen() {
       {/* Enable Animations Toggle */}
       <View className="flex-row justify-between items-center bg-surface p-4 rounded mb-4">
         <Text className="text-white text-base">Enable Animations</Text>
-        <Switch
-          value={enableAnimations}
-          onValueChange={setEnableAnimations}
-          thumbColor={enableAnimations ? '#22d3ee' : '#fff'}
-          trackColor={{ false: '#475569', true: '#0e7490' }} // you can optionally create a custom 'track' color
-        />
+
+        <Pressable
+          onPress={() => setEnableAnimations(!enableAnimations)}
+          className="flex-row items-center"
+        >
+          <MaterialCommunityIcons
+            name={
+              enableAnimations
+                ? 'toggle-switch-outline' // ✅ ON
+                : 'toggle-switch-off-outline' // ❌ OFF
+            }
+            size={34}
+            color={enableAnimations ? '#22d3ee' : '#94a3b8'}
+          />
+        </Pressable>
       </View>
     </ScrollView>
   );
