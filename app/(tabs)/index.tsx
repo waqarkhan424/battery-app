@@ -57,10 +57,10 @@ export default function HomeScreen() {
       {/* Header */}
       <View className="flex-row justify-between items-center px-4 py-8">
         <Pressable onPress={() => setTimeVisible(true)}>
-          <Ionicons name="time-outline" size={24} color="white" />
+          <Ionicons name="time-outline" size={24} color="#facc15" />
         </Pressable>
         <Pressable onPress={() => setInfoVisible(true)}>
-          <Ionicons name="information-circle-outline" size={24} color="white" />
+          <Ionicons name="information-circle-outline" size={24} color="#facc15" />
         </Pressable>
       </View>
 
