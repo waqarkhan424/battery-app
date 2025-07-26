@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
-export default function ViewAllScreen() {
+export default function SeeMoreScreen() {
   const { category } = useLocalSearchParams<{ category: string }>();
   const [videos, setVideos] = useState<VideoItem[]>([]);
 
