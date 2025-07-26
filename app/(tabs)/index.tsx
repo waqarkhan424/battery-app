@@ -38,11 +38,10 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      {/* Header */}
-      <View className="flex-row justify-between items-center px-4 py-3 bg-background">
+    <SafeAreaView className="flex-1 bg-background py-6">
+      {/* Header with padding from top edge */}
+      <View className="flex-row justify-between items-center px-4 py-8  bg-background">
         <Ionicons name="time-outline" size={24} color="white" />
-        <Text className="text-white text-xl font-bold">Charging Animations</Text>
         <Ionicons name="information-circle-outline" size={24} color="white" />
       </View>
 
@@ -51,13 +50,24 @@ export default function HomeScreen() {
           <View key={category} className="mb-6">
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-white text-lg font-medium capitalize">{category}</Text>
-              <Pressable onPress={() => router.push({ pathname: '/see-more/[category]', params: { category } })}>
+              <Pressable
+                onPress={() =>
+                  router.push({
+                    pathname: '/see-more/[category]',
+                    params: { category },
+                  })
+                }
+              >
                 <Text className="text-white text-lg font-medium">View All</Text>
               </Pressable>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {videosByCategory[category]?.map((video) => (
-                <VideoCard key={video.id} url={video.url} thumbnail={video.thumbnail} />
+                <VideoCard
+                  key={video.id}
+                  url={video.url}
+                  thumbnail={video.thumbnail}
+                />
               ))}
             </ScrollView>
           </View>
