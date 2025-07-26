@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
+  Modal,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -17,6 +18,8 @@ const categories = ['animal', 'cartoon', 'circle'];
 export default function HomeScreen() {
   const [videosByCategory, setVideosByCategory] = useState<Record<string, VideoItem[]>>({});
   const { enableAnimations } = useSettingsStore();
+  const [infoVisible, setInfoVisible] = useState(false);
+  const [timeVisible, setTimeVisible] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -37,14 +40,31 @@ export default function HomeScreen() {
     );
   }
 
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const date = now.toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+    return { time, date };
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-background py-6">
-      {/* Header with padding from top edge */}
-      <View className="flex-row justify-between items-center px-4 py-8  bg-background">
-        <Ionicons name="time-outline" size={24} color="white" />
-        <Ionicons name="information-circle-outline" size={24} color="white" />
+      {/* Header */}
+      <View className="flex-row justify-between items-center px-4 py-8">
+        <Pressable onPress={() => setTimeVisible(true)}>
+          <Ionicons name="time-outline" size={24} color="white" />
+        </Pressable>
+        <Pressable onPress={() => setInfoVisible(true)}>
+          <Ionicons name="information-circle-outline" size={24} color="white" />
+        </Pressable>
       </View>
 
+      {/* Scroll Content */}
       <ScrollView className="flex-1 px-4 pt-2">
         {categories.map((category) => (
           <View key={category} className="mb-6">
@@ -73,6 +93,34 @@ export default function HomeScreen() {
           </View>
         ))}
       </ScrollView>
+
+      {/* Info Modal */}
+      <Modal visible={infoVisible} transparent animationType="fade">
+        <View className="flex-1 bg-black/70 items-center justify-center px-6">
+          <View className="bg-slate-800 p-6 rounded-2xl w-full">
+            <Text className="text-white text-lg font-bold mb-2">About This App</Text>
+            <Text className="text-slate-300 mb-4">
+              This app provides cool charging animations categorized as Animal, Cartoon, and more. Tap any video to preview and enjoy while charging.
+            </Text>
+            <Pressable onPress={() => setInfoVisible(false)} className="self-end mt-2">
+              <Text className="text-cyan-400 font-bold text-base">Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Time Modal */}
+      <Modal visible={timeVisible} transparent animationType="fade">
+        <View className="flex-1 bg-black/70 items-center justify-center px-6">
+          <View className="bg-slate-800 p-6 rounded-2xl w-full items-center">
+            <Text className="text-white text-4xl font-bold mb-2">{getCurrentDateTime().time}</Text>
+            <Text className="text-slate-300 mb-4">{getCurrentDateTime().date}</Text>
+            <Pressable onPress={() => setTimeVisible(false)} className="mt-2">
+              <Text className="text-cyan-400 font-bold text-base">Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
