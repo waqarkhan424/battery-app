@@ -33,7 +33,6 @@ export default function SeeMoreScreen() {
     const fileName = video.url.split('/').pop();
     const fileUri = `${FileSystem.documentDirectory}${fileName}`;
 
-    // Already downloaded
     if (downloads[video.id]?.uri) {
       router.push({
         pathname: '/video-player/[videoUrl]',
@@ -91,49 +90,58 @@ export default function SeeMoreScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-background px-4 pt-6">
-      <Text className="text-white text-2xl font-bold capitalize mb-4">
-        {category}
-      </Text>
-
-      <View className="flex-row flex-wrap justify-between">
-        {videos.map((video) => {
-          const state = downloads[video.id] || {
-            downloading: false,
-            progress: 0,
-            uri: null,
-          };
-
-          return (
-            <Pressable
-              key={video.id}
-              onPress={() => handleDownloadOrPlay(video)}
-              className="w-[32%] aspect-[2/3] bg-black mb-2 rounded-lg overflow-hidden relative items-center justify-center"
-            >
-              <Image
-                source={{ uri: video.thumbnail }}
-                style={{ width: '100%', height: '100%' }}
-                resizeMode="cover"
-              />
-
-              {/* Downloading progress */}
-              {state.downloading && (
-                <View className="absolute bottom-2 left-2 right-2 flex-row justify-between items-center bg-black/60 px-2 py-1 rounded">
-                  <Text className="text-white text-xs">{state.progress}%</Text>
-                  <ActivityIndicator size="small" color="white" />
-                </View>
-              )}
-
-              {/* Show download icon only if not downloading and not yet downloaded */}
-              {!state.downloading && !state.uri && (
-                <View className="absolute bottom-2 right-2 bg-black/60 p-1 rounded-full">
-                  <Ionicons name="cloud-download-outline" size={18} color="white" />
-                </View>
-              )}
-            </Pressable>
-          );
-        })}
+    <View className="flex-1 bg-background">
+      {/* Sticky Top Bar */}
+      <View className="px-4 py-4 bg-surface border-b border-slate-700 flex-row items-center justify-center relative z-10">
+        <Pressable
+          onPress={() => router.back()}
+          className="absolute left-4"
+        >
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </Pressable>
+        <Text className="text-white text-xl font-bold capitalize text-center">
+          {category}
+        </Text>
       </View>
-    </ScrollView>
+
+      <ScrollView contentContainerStyle={{ padding: 16 }}>
+        <View className="flex-row flex-wrap justify-between">
+          {videos.map((video) => {
+            const state = downloads[video.id] || {
+              downloading: false,
+              progress: 0,
+              uri: null,
+            };
+
+            return (
+              <Pressable
+                key={video.id}
+                onPress={() => handleDownloadOrPlay(video)}
+                className="w-[32%] aspect-[2/3] bg-black mb-3 rounded-lg overflow-hidden relative items-center justify-center"
+              >
+                <Image
+                  source={{ uri: video.thumbnail }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                />
+
+                {state.downloading && (
+                  <View className="absolute bottom-2 left-2 right-2 flex-row justify-between items-center bg-black/60 px-2 py-1 rounded">
+                    <Text className="text-white text-xs">{state.progress}%</Text>
+                    <ActivityIndicator size="small" color="white" />
+                  </View>
+                )}
+
+                {!state.downloading && !state.uri && (
+                  <View className="absolute bottom-2 right-2 bg-black/60 p-1 rounded-full">
+                    <Ionicons name="cloud-download-outline" size={18} color="white" />
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+      </ScrollView>
+    </View>
   );
 }
