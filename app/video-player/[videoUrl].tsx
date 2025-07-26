@@ -1,3 +1,4 @@
+import ApplySettingsModal from '@/components/apply-settings-modal';
 import { Ionicons } from '@expo/vector-icons';
 import { ResizeMode, Video } from 'expo-av';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -8,19 +9,18 @@ export default function VideoPlayer() {
   const { videoUrl } = useLocalSearchParams<{ videoUrl: string }>();
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
 
-      // Format Time (e.g., 08:13)
       const time = now.toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
       });
 
-      // Format Date (e.g., Friday 25 July 2025)
       const date = now.toLocaleDateString('en-GB', {
         weekday: 'long',
         day: '2-digit',
@@ -32,7 +32,7 @@ export default function VideoPlayer() {
       setCurrentDate(date);
     };
 
-    updateTime(); // Set immediately on mount
+    updateTime();
 
     const now = new Date();
     const msToNextMinute = (60 - now.getSeconds()) * 1000;
@@ -80,12 +80,22 @@ export default function VideoPlayer() {
             <Ionicons name="eye-outline" size={28} color="white" />
           </View>
         </Pressable>
-        <Pressable onPress={() => console.log('Check icon pressed')}>
+        <Pressable onPress={() => setShowSettingsModal(true)}>
           <View className="w-14 h-14 rounded-full bg-cyan-400 items-center justify-center">
             <Ionicons name="checkmark" size={28} color="white" />
           </View>
         </Pressable>
       </View>
+
+      {/* Apply Settings Modal */}
+      <ApplySettingsModal
+        visible={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        onApply={() => {
+          setShowSettingsModal(false);
+          console.log('Settings Applied');
+        }}
+      />
     </View>
   );
 }
