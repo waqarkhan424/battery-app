@@ -13,6 +13,11 @@ export default function RootLayout() {
 
       {/* Hide header for video player */}
       <Stack.Screen name="video-player/[videoUrl]" options={{ headerShown: false }} />
+
+  {/* Hide header for see-more */}
+      <Stack.Screen name="see-more/[category]" options={{ headerShown: false }} />
+
+
     </Stack>
 
     );
