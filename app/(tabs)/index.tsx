@@ -35,9 +35,9 @@ export default function HomeScreen() {
       {categories.map((category) => (
         <View key={category} className="mb-6">
           <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-white text-xl font-bold capitalize">{category}</Text>
+            <Text className="text-white text-lg font-medium capitalize">{category}</Text>
             <Pressable onPress={() => router.push({ pathname: '/see-more/[category]', params: { category } })}>
-              <Text className="text-cyan-400 font-semibold">See More</Text>
+              <Text className="text-white text-lg font-medium">See More</Text>
             </Pressable>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
