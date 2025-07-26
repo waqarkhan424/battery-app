@@ -45,7 +45,8 @@ export default function HomeScreen() {
       {/* Header */}
       <View className="flex-row justify-between items-center px-4 py-8">
         <Pressable onPress={() => setTipsVisible(true)}>
-          <Ionicons name="bulb-outline" size={24} color="#facc15" />
+          {/* <Ionicons name="help-circle-outline" size={24} color="#facc15" /> */}
+          <Ionicons name="sparkles-outline" size={24} color="#facc15" />
         </Pressable>
         <Pressable onPress={() => setInfoVisible(true)}>
           <Ionicons name="information-circle-outline" size={24} color="#facc15" />
