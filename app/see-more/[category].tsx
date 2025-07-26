@@ -108,7 +108,7 @@ export default function SeeMoreScreen() {
             <Pressable
               key={video.id}
               onPress={() => handleDownloadOrPlay(video)}
-              className="w-[30%] aspect-[2/3] bg-black mb-4 rounded-lg overflow-hidden relative items-center justify-center"
+              className="w-[32%] aspect-[2/3] bg-black mb-2 rounded-lg overflow-hidden relative items-center justify-center"
             >
               <Image
                 source={{ uri: video.thumbnail }}
