@@ -17,7 +17,7 @@ export default function SeeMoreScreen() {
   return (
     <ScrollView className="flex-1 bg-background px-4 pt-6">
       <Text className="text-white text-2xl font-bold capitalize mb-4">
-        {category} Animations
+        {category}
       </Text>
       <View className="flex-row flex-wrap justify-start">
         {videos.map((video) => (
