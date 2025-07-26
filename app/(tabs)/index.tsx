@@ -1,9 +1,16 @@
 import VideoCard from '@/components/video-card';
 import { fetchVideosFromGitHub, VideoItem } from '@/lib/fetch-videos';
 import { useSettingsStore } from '@/store/settings';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 
 const categories = ['animal', 'cartoon', 'circle'];
 
@@ -31,22 +38,31 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-background px-4 pt-6">
-      {categories.map((category) => (
-        <View key={category} className="mb-6">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-white text-lg font-medium capitalize">{category}</Text>
-            <Pressable onPress={() => router.push({ pathname: '/see-more/[category]', params: { category } })}>
-              <Text className="text-white text-lg font-medium">See More</Text>
-            </Pressable>
+    <SafeAreaView className="flex-1 bg-background">
+      {/* Header */}
+      <View className="flex-row justify-between items-center px-4 py-3 bg-background">
+        <Ionicons name="time-outline" size={24} color="white" />
+        <Text className="text-white text-xl font-bold">Charging Animations</Text>
+        <Ionicons name="information-circle-outline" size={24} color="white" />
+      </View>
+
+      <ScrollView className="flex-1 px-4 pt-2">
+        {categories.map((category) => (
+          <View key={category} className="mb-6">
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-white text-lg font-medium capitalize">{category}</Text>
+              <Pressable onPress={() => router.push({ pathname: '/see-more/[category]', params: { category } })}>
+                <Text className="text-white text-lg font-medium">View All</Text>
+              </Pressable>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {videosByCategory[category]?.map((video) => (
+                <VideoCard key={video.id} url={video.url} thumbnail={video.thumbnail} />
+              ))}
+            </ScrollView>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {videosByCategory[category]?.map((video) => (
-              <VideoCard key={video.id} url={video.url} thumbnail={video.thumbnail} />
-            ))}
-          </ScrollView>
-        </View>
-      ))}
-    </ScrollView>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
