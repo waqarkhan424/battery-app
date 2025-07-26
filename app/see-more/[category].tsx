@@ -11,6 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type DownloadState = {
   progress: number;
@@ -90,9 +91,9 @@ export default function SeeMoreScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background">
       {/* Sticky Top Bar */}
-      <View className="px-4 py-4 bg-surface border-b border-slate-700 flex-row items-center justify-center relative z-10">
+      <View className="px-4 py-4 flex-row items-center justify-center relative z-10">
         <Pressable
           onPress={() => router.back()}
           className="absolute left-4"
@@ -117,7 +118,7 @@ export default function SeeMoreScreen() {
               <Pressable
                 key={video.id}
                 onPress={() => handleDownloadOrPlay(video)}
-                className="w-[32%] aspect-[2/3] bg-black mb-3 rounded-lg overflow-hidden relative items-center justify-center"
+                className="w-[32%] aspect-[2/3] bg-black mb-2 rounded-lg overflow-hidden relative items-center justify-center"
               >
                 <Image
                   source={{ uri: video.thumbnail }}
@@ -142,6 +143,6 @@ export default function SeeMoreScreen() {
           })}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
