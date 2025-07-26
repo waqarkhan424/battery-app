@@ -19,7 +19,7 @@ export default function HomeScreen() {
   const [videosByCategory, setVideosByCategory] = useState<Record<string, VideoItem[]>>({});
   const { enableAnimations } = useSettingsStore();
   const [infoVisible, setInfoVisible] = useState(false);
-  const [timeVisible, setTimeVisible] = useState(false);
+  const [tipsVisible, setTipsVisible] = useState(false); // new state
 
   useEffect(() => {
     const load = async () => {
@@ -40,24 +40,12 @@ export default function HomeScreen() {
     );
   }
 
-  const getCurrentDateTime = () => {
-    const now = new Date();
-    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const date = now.toLocaleDateString('en-GB', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
-    return { time, date };
-  };
-
   return (
     <SafeAreaView className="flex-1 bg-background py-6">
       {/* Header */}
       <View className="flex-row justify-between items-center px-4 py-8">
-        <Pressable onPress={() => setTimeVisible(true)}>
-          <Ionicons name="time-outline" size={24} color="#facc15" />
+        <Pressable onPress={() => setTipsVisible(true)}>
+          <Ionicons name="bulb-outline" size={24} color="#facc15" />
         </Pressable>
         <Pressable onPress={() => setInfoVisible(true)}>
           <Ionicons name="information-circle-outline" size={24} color="#facc15" />
@@ -78,7 +66,7 @@ export default function HomeScreen() {
                   })
                 }
               >
-                <Text className="text-white text-lg font-medium">View All</Text>
+                <Text className="text-white text-lg font-medium">See More</Text>
               </Pressable>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -109,14 +97,19 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
-      {/* Time Modal */}
-      <Modal visible={timeVisible} transparent animationType="fade">
+      {/* Tips Modal */}
+      <Modal visible={tipsVisible} transparent animationType="fade">
         <View className="flex-1 bg-black/70 items-center justify-center px-6">
-          <View className="bg-slate-800 p-6 rounded-2xl w-full items-center">
-            <Text className="text-white text-4xl font-bold mb-2">{getCurrentDateTime().time}</Text>
-            <Text className="text-slate-300 mb-4">{getCurrentDateTime().date}</Text>
-            <Pressable onPress={() => setTimeVisible(false)} className="mt-2">
-              <Text className="text-cyan-400 font-bold text-base">Close</Text>
+          <View className="bg-slate-800 p-6 rounded-2xl w-full">
+            <Text className="text-white text-lg font-bold mb-2">Tips to Use This App</Text>
+            <View className="space-y-2">
+              <Text className="text-slate-300">• Tap any animation to preview it.</Text>
+              <Text className="text-slate-300">• Use 'See More' to browse full categories.</Text>
+              <Text className="text-slate-300">• Animations auto-play once downloaded.</Text>
+              <Text className="text-slate-300">• Use Settings tab to customize behavior.</Text>
+            </View>
+            <Pressable onPress={() => setTipsVisible(false)} className="self-end mt-4">
+              <Text className="text-cyan-400 font-bold text-base">Got It</Text>
             </Pressable>
           </View>
         </View>
