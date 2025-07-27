@@ -41,7 +41,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background py-6">
+    <SafeAreaView className="flex-1 bg-background">
       {/* Header */}
       <View className="flex-row justify-between items-center px-4 py-8">
         <Pressable onPress={() => setTipsVisible(true)}>
