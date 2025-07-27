@@ -23,8 +23,6 @@ export default function BatteryScreen() {
 
   return (
     <ScrollView className="flex-1 bg-background p-4">
-      <Text className="text-cyan-400 text-2xl font-bold mb-4">🔋 Battery Info</Text>
-
       <View className="mb-3">
         <Text className="text-slate-400">
           Battery Level:{' '}
