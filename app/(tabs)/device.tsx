@@ -26,7 +26,6 @@ export default function DeviceInfoScreen() {
 
   return (
     <ScrollView className="flex-1 bg-background p-4">
-      <Text className="text-cyan-400 text-2xl font-bold mb-4">📱 Android Device Info</Text>
       {Object.entries(info).map(([label, value]) => (
         <View key={label} className="mb-2">
           <Text className="text-slate-400">
