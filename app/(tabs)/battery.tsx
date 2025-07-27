@@ -6,6 +6,7 @@ import {
     useLowPowerMode,
 } from 'expo-battery';
 import { ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function BatteryScreen() {
   const batteryLevel = useBatteryLevel();
@@ -49,20 +50,25 @@ export default function BatteryScreen() {
   ];
 
   return (
-    <ScrollView className="flex-1 bg-[#0f172a] p-4">
+    <SafeAreaView className="flex-1 bg-[#0f172a]">
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="p-4">
 
-      <View className="flex-row flex-wrap justify-between gap-4">
-        {infoCards.map((card, index) => (
-          <View
-            key={index}
-            className="w-[48%] bg-[#1e293b] p-4 rounded-2xl shadow-md"
-          >
-            <View className="mb-2">{card.icon}</View>
-            <Text className="text-slate-400 text-sm">{card.label}</Text>
-            <Text className="text-white text-lg font-semibold">{card.value}</Text>
-          </View>
-        ))}
-      </View>
-    </ScrollView>
+        <View className="flex-row flex-wrap justify-between gap-4">
+          {infoCards.map((card, index) => (
+            <View
+              key={index}
+              className="w-[48%] bg-[#1e293b] p-4 rounded-2xl shadow-md"
+            >
+              <View className="mb-2">{card.icon}</View>
+              <Text className="text-slate-400 text-sm">{card.label}</Text>
+              <Text className="text-white text-lg font-semibold">{card.value}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Add padding at the bottom to ensure full coverage */}
+        <View className="h-10" />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
