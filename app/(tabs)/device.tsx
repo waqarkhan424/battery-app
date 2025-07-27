@@ -1,6 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
 import * as Device from 'expo-device';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function DeviceInfoScreen() {
   const [info, setInfo] = useState<Record<string, string>>({});
@@ -18,21 +20,31 @@ export default function DeviceInfoScreen() {
       'Device Year': Device.deviceYearClass?.toString() ?? 'N/A',
       'Product Name': Device.productName ?? 'N/A',
       'Total RAM': Device.totalMemory
-      ? `${(Device.totalMemory / 1_000_000_000).toFixed(2)} GB`
-      : 'N/A',
-
+        ? `${(Device.totalMemory / 1_000_000_000).toFixed(2)} GB`
+        : 'N/A',
     });
   }, []);
 
   return (
-    <ScrollView className="flex-1 bg-background p-4">
-      {Object.entries(info).map(([label, value]) => (
-        <View key={label} className="mb-2">
-          <Text className="text-slate-400">
-            {label}: <Text className="text-white">{value}</Text>
-          </Text>
+    <SafeAreaView className="flex-1 bg-background">
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+        <Text className="text-cyan-400 text-2xl font-bold mb-4">📱 Device Info</Text>
+
+        <View className="flex-col gap-4">
+          {Object.entries(info).map(([label, value], index) => (
+            <View
+              key={index}
+              className="w-full bg-surface p-4 rounded-2xl shadow-md"
+            >
+              <View className="mb-2 flex-row items-center gap-2">
+                <Ionicons name="hardware-chip-outline" size={20} color="#94a3b8" />
+                <Text className="text-secondary text-sm">{label}</Text>
+              </View>
+              <Text className="text-white text-lg font-semibold">{value}</Text>
+            </View>
+          ))}
         </View>
-      ))}
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
