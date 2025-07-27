@@ -28,8 +28,6 @@ export default function DeviceInfoScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-        <Text className="text-cyan-400 text-2xl font-bold mb-4">📱 Device Info</Text>
-
         <View className="flex-col gap-4">
           {Object.entries(info).map(([label, value], index) => (
             <View
