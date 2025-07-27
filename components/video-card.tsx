@@ -66,7 +66,8 @@ export default function VideoCard({ url, thumbnail }: Props) {
       <View className="w-32 h-48 rounded-lg overflow-hidden bg-black mr-3 relative shadow-md">
         <Image
           source={{ uri: thumbnail }}
-          style={{ width: '100%', height: '85%', backgroundColor: 'black' }}
+          // style={{ width: '100%', height: '85%', backgroundColor: 'black' }}
+          style={{ width: '100%', height: '100%', backgroundColor: 'black' }}
           resizeMode="cover"
         />
 
