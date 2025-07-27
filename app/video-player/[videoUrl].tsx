@@ -35,6 +35,7 @@ export default function VideoPlayer() {
           setShowSettingsModal(false);
           console.log('Settings Applied');
         }}
+         videoUrl={decodeURIComponent(videoUrl)}
       />
     </View>
   );

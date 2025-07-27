@@ -1,3 +1,4 @@
+import { useSettingsStore } from '@/store/settings';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
@@ -6,14 +7,17 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   onApply: () => void;
+  videoUrl: string; 
 };
 
-export default function ApplySettingsModal({ visible, onClose, onApply }: Props) {
+export default function ApplySettingsModal({ visible, onClose, onApply, videoUrl }: Props) {
   const [duration, setDuration] = useState('1 minute');
   const [closeMethod, setCloseMethod] = useState('Single Tap To Hide');
 
   const [showDurationOptions, setShowDurationOptions] = useState(false);
   const [showCloseOptions, setShowCloseOptions] = useState(false);
+
+  const setAppliedAnimation = useSettingsStore((state) => state.setAppliedAnimation);
 
   if (!visible) return null;
 
@@ -99,7 +103,10 @@ export default function ApplySettingsModal({ visible, onClose, onApply }: Props)
         </Pressable>
 
         <Pressable
-          onPress={onApply}
+          onPress={() => {
+            setAppliedAnimation(videoUrl); //  Save animation URI globally
+            onApply();                      // trigger additional logic
+          }}
           className="bg-cyan-400 px-6 py-3 rounded-xl"
         >
           <Text className="text-white font-bold">Apply</Text>
