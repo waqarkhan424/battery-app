@@ -50,24 +50,20 @@ export default function BatteryScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0f172a]">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="p-4">
-
-        <View className="flex-row flex-wrap justify-between gap-4">
+    <SafeAreaView className="flex-1 bg-background">
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+        <View className="flex-col gap-4">
           {infoCards.map((card, index) => (
             <View
               key={index}
-              className="w-[48%] bg-[#1e293b] p-4 rounded-2xl shadow-md"
+              className="w-full bg-surface p-4 rounded-2xl shadow-md"
             >
               <View className="mb-2">{card.icon}</View>
-              <Text className="text-slate-400 text-sm">{card.label}</Text>
+              <Text className="text-secondary text-sm">{card.label}</Text>
               <Text className="text-white text-lg font-semibold">{card.value}</Text>
             </View>
           ))}
         </View>
-
-        {/* Add padding at the bottom to ensure full coverage */}
-        <View className="h-10" />
       </ScrollView>
     </SafeAreaView>
   );
