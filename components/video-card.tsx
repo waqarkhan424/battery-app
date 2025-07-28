@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -21,10 +22,39 @@ export default function VideoCard({ url, thumbnail }: Props) {
   const [downloadProgress, setDownloadProgress] = useState<number>(0);
 
   const fileName = url.split('/').pop();
-  const fileUri = `${FileSystem.documentDirectory}${fileName}`;
+
+  // ✅ Check if the video already exists in the album
+  useEffect(() => {
+    const checkSavedVideo = async () => {
+      try {
+        const permissions = await MediaLibrary.requestPermissionsAsync();
+        if (permissions.status !== 'granted') return;
+
+        // Try to get the album first
+        const album = await MediaLibrary.getAlbumAsync('Movies');
+        if (!album) return;
+
+        const assets = await MediaLibrary.getAssetsAsync({
+          mediaType: 'video',
+          first: 1000,
+          album,
+        });
+
+        const matched = assets.assets?.find((a) => a.filename === fileName);
+        if (matched) {
+          setLocalUri(matched.uri);
+        }
+      } catch (err) {
+        console.error('Error checking saved video:', err);
+      }
+    };
+
+    checkSavedVideo();
+  }, []);
 
   const handlePress = async () => {
     if (localUri) {
+      // Video already downloaded → open it
       router.push({
         pathname: '/video-player/[videoUrl]',
         params: { videoUrl: encodeURIComponent(localUri) },
@@ -33,9 +63,11 @@ export default function VideoCard({ url, thumbnail }: Props) {
       setDownloading(true);
       setDownloadProgress(0);
 
+      const tempFileUri = `${FileSystem.cacheDirectory}${fileName}`;
+
       const downloadResumable = FileSystem.createDownloadResumable(
         url,
-        fileUri,
+        tempFileUri,
         {},
         (progress) => {
           const percentage =
@@ -46,11 +78,29 @@ export default function VideoCard({ url, thumbnail }: Props) {
 
       try {
         const result = await downloadResumable.downloadAsync();
-        if (result && result.uri) {
-          setLocalUri(result.uri);
+
+        if (result?.uri) {
+          const { status } = await MediaLibrary.requestPermissionsAsync();
+          if (status !== 'granted') {
+            alert('Permission denied to access storage');
+            return;
+          }
+
+          const asset = await MediaLibrary.createAssetAsync(result.uri);
+
+          // Create album if it doesn't exist
+          let album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
+          if (!album) {
+            album = await MediaLibrary.createAlbumAsync('BatteryAnimations', asset, false);
+          } else {
+            await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+          }
+
+          setLocalUri(asset.uri);
+
           router.push({
             pathname: '/video-player/[videoUrl]',
-            params: { videoUrl: encodeURIComponent(result.uri) },
+            params: { videoUrl: encodeURIComponent(asset.uri) },
           });
         }
       } catch (error) {
@@ -66,7 +116,6 @@ export default function VideoCard({ url, thumbnail }: Props) {
       <View className="w-32 h-48 rounded-lg overflow-hidden bg-black mr-3 relative shadow-md">
         <Image
           source={{ uri: thumbnail }}
-          // style={{ width: '100%', height: '85%', backgroundColor: 'black' }}
           style={{ width: '100%', height: '100%', backgroundColor: 'black' }}
           resizeMode="cover"
         />
