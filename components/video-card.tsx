@@ -31,7 +31,7 @@ export default function VideoCard({ url, thumbnail }: Props) {
         if (permissions.status !== 'granted') return;
 
         // Try to get the album first
-        const album = await MediaLibrary.getAlbumAsync('Movies');
+        const album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
         if (!album) return;
 
         const assets = await MediaLibrary.getAssetsAsync({
