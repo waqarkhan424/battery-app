@@ -5,12 +5,12 @@ import { useEffect } from 'react';
 
 export default function ChargingListener() {
   const { enableAnimations, appliedAnimation } = useSettingsStore();
-  console.log("enableAnimations::::::::::", enableAnimations)
-  console.log("appliedAnimation:::::::::::::", appliedAnimation)
+  // console.log("enableAnimations::::::::::", enableAnimations)
+  // console.log("appliedAnimation:::::::::::::", appliedAnimation)
 
   useEffect(() => {
     const subscription = Battery.addBatteryStateListener(({ batteryState }) => {
-      console.log("subscription::::::::::::", subscription)
+      // console.log("subscription::::::::::::", subscription)
       if (
         batteryState === Battery.BatteryState.CHARGING &&
         enableAnimations &&
