@@ -23,7 +23,7 @@ export default function VideoCard({ url, thumbnail }: Props) {
 
   const fileName = url.split('/').pop();
 
-  // ✅ Check if the video already exists in the album
+  //  Check if the video already exists in the album
   useEffect(() => {
     const checkSavedVideo = async () => {
       try {
