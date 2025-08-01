@@ -23,14 +23,13 @@ export default function VideoCard({ url, thumbnail }: Props) {
 
   const fileName = url.split('/').pop();
 
-  //  Check if the video already exists in the album
+  // Check if the video already exists in the album
   useEffect(() => {
     const checkSavedVideo = async () => {
       try {
         const permissions = await MediaLibrary.requestPermissionsAsync();
         if (permissions.status !== 'granted') return;
 
-        // Try to get the album first
         const album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
         if (!album) return;
 
@@ -54,7 +53,7 @@ export default function VideoCard({ url, thumbnail }: Props) {
 
   const handlePress = async () => {
     if (localUri) {
-      // Video already downloaded → open it
+      console.log("localUri:::::::::::::", localUri);
       router.push({
         pathname: '/video-player/[videoUrl]',
         params: { videoUrl: encodeURIComponent(localUri) },
@@ -88,7 +87,6 @@ export default function VideoCard({ url, thumbnail }: Props) {
 
           const asset = await MediaLibrary.createAssetAsync(result.uri);
 
-          // Create album if it doesn't exist
           let album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
           if (!album) {
             album = await MediaLibrary.createAlbumAsync('BatteryAnimations', asset, false);
@@ -96,12 +94,26 @@ export default function VideoCard({ url, thumbnail }: Props) {
             await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
           }
 
-          setLocalUri(asset.uri);
+          // Wait briefly for system to reindex the asset
+          await new Promise((resolve) => setTimeout(resolve, 500));
 
-          router.push({
-            pathname: '/video-player/[videoUrl]',
-            params: { videoUrl: encodeURIComponent(asset.uri) },
+          // Re-fetch asset from album to get updated path
+          const refreshedAssets = await MediaLibrary.getAssetsAsync({
+            mediaType: 'video',
+            first: 1000,
+            album,
           });
+
+          const updatedAsset = refreshedAssets.assets.find((a) => a.filename === fileName);
+          if (updatedAsset) {
+            setLocalUri(updatedAsset.uri);
+            console.log("updatedAsset.uri:::::::::::::", updatedAsset.uri);
+
+            router.push({
+              pathname: '/video-player/[videoUrl]',
+              params: { videoUrl: encodeURIComponent(updatedAsset.uri) },
+            });
+          }
         }
       } catch (error) {
         console.error('Download failed:', error);

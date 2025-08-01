@@ -13,9 +13,7 @@
     "android": {
       "edgeToEdgeEnabled": true,
       "package": "com.anonymous.batteryapp",
-      "permissions": [
-        "WRITE_EXTERNAL_STORAGE"
-      ]
+      "permissions": []
     },
     "web": {
       "bundler": "metro",
