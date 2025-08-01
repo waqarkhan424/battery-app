@@ -53,7 +53,6 @@ export default function VideoCard({ url, thumbnail }: Props) {
 
   const handlePress = async () => {
     if (localUri) {
-      console.log("localUri:::::::::::::", localUri);
       router.push({
         pathname: '/video-player/[videoUrl]',
         params: { videoUrl: encodeURIComponent(localUri) },
@@ -107,7 +106,6 @@ export default function VideoCard({ url, thumbnail }: Props) {
           const updatedAsset = refreshedAssets.assets.find((a) => a.filename === fileName);
           if (updatedAsset) {
             setLocalUri(updatedAsset.uri);
-            console.log("updatedAsset.uri:::::::::::::", updatedAsset.uri);
 
             router.push({
               pathname: '/video-player/[videoUrl]',
