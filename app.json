@@ -12,8 +12,7 @@
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.batteryapp",
-      "permissions": []
+      "package": "com.anonymous.batteryapp"
     },
     "web": {
       "bundler": "metro",
