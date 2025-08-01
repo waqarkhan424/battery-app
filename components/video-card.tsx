@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -23,33 +23,34 @@ export default function VideoCard({ url, thumbnail }: Props) {
 
   const fileName = url.split('/').pop();
 
-  // Check if the video already exists in the album
-  useEffect(() => {
-    const checkSavedVideo = async () => {
-      try {
-        const permissions = await MediaLibrary.requestPermissionsAsync();
-        if (permissions.status !== 'granted') return;
+  useFocusEffect(
+    useCallback(() => {
+      const checkSavedVideo = async () => {
+        try {
+          const permissions = await MediaLibrary.requestPermissionsAsync();
+          if (permissions.status !== 'granted') return;
 
-        const album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
-        if (!album) return;
+          const album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
+          if (!album) return;
 
-        const assets = await MediaLibrary.getAssetsAsync({
-          mediaType: 'video',
-          first: 1000,
-          album,
-        });
+          const assets = await MediaLibrary.getAssetsAsync({
+            mediaType: 'video',
+            first: 1000,
+            album,
+          });
 
-        const matched = assets.assets?.find((a) => a.filename === fileName);
-        if (matched) {
-          setLocalUri(matched.uri);
+          const matched = assets.assets?.find((a) => a.filename === fileName);
+          if (matched) {
+            setLocalUri(matched.uri);
+          }
+        } catch (err) {
+          console.error('Error checking saved video:', err);
         }
-      } catch (err) {
-        console.error('Error checking saved video:', err);
-      }
-    };
+      };
 
-    checkSavedVideo();
-  }, []);
+      checkSavedVideo();
+    }, [])
+  );
 
   const handlePress = async () => {
     if (localUri) {
@@ -93,10 +94,8 @@ export default function VideoCard({ url, thumbnail }: Props) {
             await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
           }
 
-          // Wait briefly for system to reindex the asset
           await new Promise((resolve) => setTimeout(resolve, 500));
 
-          // Re-fetch asset from album to get updated path
           const refreshedAssets = await MediaLibrary.getAssetsAsync({
             mediaType: 'video',
             first: 1000,

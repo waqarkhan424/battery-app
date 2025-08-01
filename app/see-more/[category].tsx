@@ -1,6 +1,7 @@
 import { fetchVideosFromGitHub, VideoItem } from '@/lib/fetch-videos';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -24,16 +25,55 @@ export default function SeeMoreScreen() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [downloads, setDownloads] = useState<{ [key: string]: DownloadState }>({});
 
-  useEffect(() => {
-    if (category) {
-      fetchVideosFromGitHub(category).then(setVideos);
+  const checkIfVideoExists = async (fileName: string) => {
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') return null;
+
+      const album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
+      if (!album) return null;
+
+      const assets = await MediaLibrary.getAssetsAsync({
+        mediaType: 'video',
+        first: 1000,
+        album,
+      });
+
+      const match = assets.assets.find((a) => a.filename === fileName);
+      return match?.uri || null;
+    } catch (error) {
+      console.error('Failed to check video in gallery:', error);
+      return null;
     }
+  };
+
+  useEffect(() => {
+    const loadVideos = async () => {
+      if (!category) return;
+
+      const fetched = await fetchVideosFromGitHub(category);
+      setVideos(fetched);
+
+      const initialDownloads: typeof downloads = {};
+      for (const video of fetched) {
+        const fileName = video.url.split('/').pop();
+        const existingUri = await checkIfVideoExists(fileName!);
+        if (existingUri) {
+          initialDownloads[video.id] = {
+            downloading: false,
+            progress: 100,
+            uri: existingUri,
+          };
+        }
+      }
+
+      setDownloads(initialDownloads);
+    };
+
+    loadVideos();
   }, [category]);
 
   const handleDownloadOrPlay = async (video: VideoItem) => {
-    const fileName = video.url.split('/').pop();
-    const fileUri = `${FileSystem.documentDirectory}${fileName}`;
-
     if (downloads[video.id]?.uri) {
       router.push({
         pathname: '/video-player/[videoUrl]',
@@ -41,6 +81,9 @@ export default function SeeMoreScreen() {
       });
       return;
     }
+
+    const fileName = video.url.split('/').pop();
+    const fileUri = `${FileSystem.documentDirectory}${fileName}`;
 
     setDownloads((prev) => ({
       ...prev,
@@ -67,19 +110,40 @@ export default function SeeMoreScreen() {
     try {
       const result = await downloadResumable.downloadAsync();
       if (result?.uri) {
-        setDownloads((prev) => ({
-          ...prev,
-          [video.id]: {
-            downloading: false,
-            progress: 100,
-            uri: result.uri,
-          },
-        }));
+        const asset = await MediaLibrary.createAssetAsync(result.uri);
 
-        router.push({
-          pathname: '/video-player/[videoUrl]',
-          params: { videoUrl: encodeURIComponent(result.uri) },
+        let album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
+        if (!album) {
+          album = await MediaLibrary.createAlbumAsync('BatteryAnimations', asset, false);
+        } else {
+          await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        const refreshedAssets = await MediaLibrary.getAssetsAsync({
+          mediaType: 'video',
+          first: 1000,
+          album,
         });
+
+        const updatedAsset = refreshedAssets.assets.find((a) => a.filename === fileName);
+
+        if (updatedAsset) {
+          setDownloads((prev) => ({
+            ...prev,
+            [video.id]: {
+              downloading: false,
+              progress: 100,
+              uri: updatedAsset.uri,
+            },
+          }));
+
+          router.push({
+            pathname: '/video-player/[videoUrl]',
+            params: { videoUrl: encodeURIComponent(updatedAsset.uri) },
+          });
+        }
       }
     } catch (err) {
       console.error('Download failed:', err);
@@ -92,12 +156,8 @@ export default function SeeMoreScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      {/* Sticky Top Bar */}
       <View className="px-4 py-4 flex-row items-center justify-center relative z-10">
-        <Pressable
-          onPress={() => router.back()}
-          className="absolute left-4"
-        >
+        <Pressable onPress={() => router.back()} className="absolute left-4">
           <Ionicons name="arrow-back" size={24} color="white" />
         </Pressable>
         <Text className="text-white text-xl font-bold capitalize text-center">
