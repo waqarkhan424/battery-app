@@ -1,7 +1,7 @@
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 
 export function useVideoDownload(videoUrl: string) {
   const [localUri, setLocalUri] = useState<string | null>(null);
@@ -11,32 +11,41 @@ export function useVideoDownload(videoUrl: string) {
   const fileName = videoUrl.split('/').pop()!;
   const tempFileUri = `${FileSystem.cacheDirectory}${fileName}`;
 
-  useEffect(() => {
-    const checkIfVideoExists = async () => {
-      try {
-        const permissions = await MediaLibrary.requestPermissionsAsync();
-        if (permissions.status !== 'granted') return;
+  // Extracted so we can call it from both useEffect and on focus
+  const checkIfVideoExists = useCallback(async () => {
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') return;
 
-        const album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
-        if (!album) return;
+      const album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
+      if (!album) return;
 
-        const assets = await MediaLibrary.getAssetsAsync({
-          mediaType: 'video',
-          first: 1000,
-          album,
-        });
+      const assets = await MediaLibrary.getAssetsAsync({
+        mediaType: 'video',
+        first: 1000,
+        album,
+      });
 
-        const matched = assets.assets?.find((a) => a.filename === fileName);
-        if (matched) {
-          setLocalUri(matched.uri);
-        }
-      } catch (error) {
-        console.error('Error checking video in gallery:', error);
+      const matched = assets.assets.find(a => a.filename === fileName);
+      if (matched) {
+        setLocalUri(matched.uri);
       }
-    };
+    } catch (error) {
+      console.error('Error checking video in gallery:', error);
+    }
+  }, [fileName]);
 
+  // Initial check on mount
+  useEffect(() => {
     checkIfVideoExists();
-  }, [videoUrl]);
+  }, [checkIfVideoExists]);
+
+  // Re-run check whenever this screen regains focus
+  useFocusEffect(
+    useCallback(() => {
+      checkIfVideoExists();
+    }, [checkIfVideoExists])
+  );
 
   const downloadAndSaveVideo = async () => {
     setDownloading(true);
@@ -46,36 +55,42 @@ export function useVideoDownload(videoUrl: string) {
       videoUrl,
       tempFileUri,
       {},
-      (downloadProgress) => {
-        const percent =
-          downloadProgress.totalBytesWritten /
-          downloadProgress.totalBytesExpectedToWrite;
-        setProgress(Math.round(percent * 100));
+      ({ totalBytesWritten, totalBytesExpectedToWrite }) => {
+        const pct = totalBytesWritten / totalBytesExpectedToWrite;
+        setProgress(Math.round(pct * 100));
       }
     );
 
     try {
-      const result = await downloadResumable.downloadAsync();
-      if (!result?.uri) throw new Error('Download failed');
+      const downloadResult = await downloadResumable.downloadAsync();
+      // Narrow the union: ensure uri exists
+      if (!downloadResult?.uri) {
+        throw new Error('Download failed');
+      }
+      const downloadedUri = downloadResult.uri;
 
-      const asset = await MediaLibrary.createAssetAsync(result.uri);
+      const asset = await MediaLibrary.createAssetAsync(downloadedUri);
       let album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
 
       if (!album) {
-        album = await MediaLibrary.createAlbumAsync('BatteryAnimations', asset, false);
+        album = await MediaLibrary.createAlbumAsync(
+          'BatteryAnimations',
+          asset,
+          false
+        );
       } else {
         await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
       }
 
-      await new Promise((res) => setTimeout(res, 500));
+      // Wait a moment for the gallery index to update
+      await new Promise(res => setTimeout(res, 500));
 
-      const refreshedAssets = await MediaLibrary.getAssetsAsync({
+      const refreshed = await MediaLibrary.getAssetsAsync({
         mediaType: 'video',
         first: 1000,
         album,
       });
-
-      const updatedAsset = refreshedAssets.assets.find((a) => a.filename === fileName);
+      const updatedAsset = refreshed.assets.find(a => a.filename === fileName);
       if (updatedAsset) {
         setLocalUri(updatedAsset.uri);
         router.push({
