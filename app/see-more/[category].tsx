@@ -1,158 +1,24 @@
+import VideoItemCard from '@/components/video-item-card';
 import { fetchVideosFromGitHub, VideoItem } from '@/lib/fetch-videos';
 import { Ionicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
-import * as MediaLibrary from 'expo-media-library';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-type DownloadState = {
-  progress: number;
-  downloading: boolean;
-  uri: string | null;
-};
 
 export default function SeeMoreScreen() {
   const { category } = useLocalSearchParams<{ category: string }>();
   const [videos, setVideos] = useState<VideoItem[]>([]);
-  const [downloads, setDownloads] = useState<{ [key: string]: DownloadState }>({});
-
-  const checkIfVideoExists = async (fileName: string) => {
-    try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== 'granted') return null;
-
-      const album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
-      if (!album) return null;
-
-      const assets = await MediaLibrary.getAssetsAsync({
-        mediaType: 'video',
-        first: 1000,
-        album,
-      });
-
-      const match = assets.assets.find((a) => a.filename === fileName);
-      return match?.uri || null;
-    } catch (error) {
-      console.error('Failed to check video in gallery:', error);
-      return null;
-    }
-  };
 
   useEffect(() => {
     const loadVideos = async () => {
       if (!category) return;
-
       const fetched = await fetchVideosFromGitHub(category);
       setVideos(fetched);
-
-      const initialDownloads: typeof downloads = {};
-      for (const video of fetched) {
-        const fileName = video.url.split('/').pop();
-        const existingUri = await checkIfVideoExists(fileName!);
-        if (existingUri) {
-          initialDownloads[video.id] = {
-            downloading: false,
-            progress: 100,
-            uri: existingUri,
-          };
-        }
-      }
-
-      setDownloads(initialDownloads);
     };
 
     loadVideos();
   }, [category]);
-
-  const handleDownloadOrPlay = async (video: VideoItem) => {
-    if (downloads[video.id]?.uri) {
-      router.push({
-        pathname: '/video-player/[videoUrl]',
-        params: { videoUrl: encodeURIComponent(downloads[video.id].uri!) },
-      });
-      return;
-    }
-
-    const fileName = video.url.split('/').pop();
-    const fileUri = `${FileSystem.documentDirectory}${fileName}`;
-
-    setDownloads((prev) => ({
-      ...prev,
-      [video.id]: { downloading: true, progress: 0, uri: null },
-    }));
-
-    const downloadResumable = FileSystem.createDownloadResumable(
-      video.url,
-      fileUri,
-      {},
-      (progress) => {
-        const percent =
-          progress.totalBytesWritten / progress.totalBytesExpectedToWrite;
-        setDownloads((prev) => ({
-          ...prev,
-          [video.id]: {
-            ...prev[video.id],
-            progress: Math.round(percent * 100),
-          },
-        }));
-      }
-    );
-
-    try {
-      const result = await downloadResumable.downloadAsync();
-      if (result?.uri) {
-        const asset = await MediaLibrary.createAssetAsync(result.uri);
-
-        let album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
-        if (!album) {
-          album = await MediaLibrary.createAlbumAsync('BatteryAnimations', asset, false);
-        } else {
-          await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        const refreshedAssets = await MediaLibrary.getAssetsAsync({
-          mediaType: 'video',
-          first: 1000,
-          album,
-        });
-
-        const updatedAsset = refreshedAssets.assets.find((a) => a.filename === fileName);
-
-        if (updatedAsset) {
-          setDownloads((prev) => ({
-            ...prev,
-            [video.id]: {
-              downloading: false,
-              progress: 100,
-              uri: updatedAsset.uri,
-            },
-          }));
-
-          router.push({
-            pathname: '/video-player/[videoUrl]',
-            params: { videoUrl: encodeURIComponent(updatedAsset.uri) },
-          });
-        }
-      }
-    } catch (err) {
-      console.error('Download failed:', err);
-      setDownloads((prev) => ({
-        ...prev,
-        [video.id]: { downloading: false, progress: 0, uri: null },
-      }));
-    }
-  };
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -167,40 +33,13 @@ export default function SeeMoreScreen() {
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         <View className="flex-row flex-wrap justify-between">
-          {videos.map((video) => {
-            const state = downloads[video.id] || {
-              downloading: false,
-              progress: 0,
-              uri: null,
-            };
-
-            return (
-              <Pressable
-                key={video.id}
-                onPress={() => handleDownloadOrPlay(video)}
-                className="w-[32%] aspect-[2/3] bg-black mb-2 rounded-lg overflow-hidden relative items-center justify-center"
-              >
-                <Image
-                  source={{ uri: video.thumbnail }}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="cover"
-                />
-
-                {state.downloading && (
-                  <View className="absolute bottom-2 left-2 right-2 flex-row justify-between items-center bg-black/60 px-2 py-1 rounded">
-                    <Text className="text-white text-xs">{state.progress}%</Text>
-                    <ActivityIndicator size="small" color="white" />
-                  </View>
-                )}
-
-                {!state.downloading && !state.uri && (
-                  <View className="absolute bottom-2 right-2 bg-black/60 p-1 rounded-full">
-                    <Ionicons name="cloud-download-outline" size={18} color="white" />
-                  </View>
-                )}
-              </Pressable>
-            );
-          })}
+          {videos.map((video) => (
+            <VideoItemCard
+              key={video.id}
+              video={video}
+              styleClass="w-[32%] aspect-[2/3] bg-black mb-2 rounded-lg overflow-hidden relative items-center justify-center"
+            />
+          ))}
         </View>
       </ScrollView>
     </SafeAreaView>
