@@ -5,8 +5,11 @@ import {
   Ionicons,
   MaterialCommunityIcons,
 } from '@expo/vector-icons';
-import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
+import { Linking, NativeModules, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+// Destructure the native module we registered on Android
+const { ChargingServiceModule } = NativeModules;
 
 export default function SettingsScreen() {
   const {
@@ -33,11 +36,7 @@ export default function SettingsScreen() {
       <Text className="text-white text-base">{label}</Text>
       <Pressable onPress={onToggle}>
         <MaterialCommunityIcons
-          name={
-            value
-              ? 'toggle-switch-outline'
-              : 'toggle-switch-off-outline'
-          }
+          name={value ? 'toggle-switch-outline' : 'toggle-switch-off-outline'}
           size={34}
           color={value ? '#22d3ee' : '#94a3b8'}
         />
@@ -69,9 +68,7 @@ export default function SettingsScreen() {
     <SafeAreaView className="flex-1 bg-background">
       {/* Fixed Header */}
       <View className="px-4 py-4 bg-background border-surface">
-        <Text className="text-white text-2xl font-bold text-center">
-          Settings
-        </Text>
+        <Text className="text-white text-2xl font-bold text-center">Settings</Text>
       </View>
 
       {/* Scrollable Content */}
@@ -83,26 +80,40 @@ export default function SettingsScreen() {
         <ToggleRow
           label="Enable Animations"
           value={enableAnimations}
-          onToggle={() => setEnableAnimations(!enableAnimations)}
+          onToggle={() => {
+            const newValue = !enableAnimations;
+            setEnableAnimations(newValue);
+            if (newValue) {
+              // Start the foreground service when animations are enabled
+              ChargingServiceModule.startService();
+            } else {
+              // Stop it when disabled
+              ChargingServiceModule.stopService();
+            }
+          }}
         />
         <ToggleRow
           label="Hide battery percentage"
           value={hideBatteryPercentage}
-          onToggle={() =>
-            setHideBatteryPercentage(!hideBatteryPercentage)
-          }
+          onToggle={() => setHideBatteryPercentage(!hideBatteryPercentage)}
         />
         <ToggleRow
           label="Keep service always alive"
           value={keepServiceAlive}
-          onToggle={() => setKeepServiceAlive(!keepServiceAlive)}
+          onToggle={() => {
+            const newValue = !keepServiceAlive;
+            setKeepServiceAlive(newValue);
+            if (newValue) {
+              ChargingServiceModule.startService();
+            } else {
+              ChargingServiceModule.stopService();
+            }
+          }}
         />
         <ToggleRow
           label="Overlay permission enabled"
           value={overlayPermissionEnabled}
-          onToggle={() =>
-            setOverlayPermissionEnabled(!overlayPermissionEnabled)
-          }
+          onToggle={() => setOverlayPermissionEnabled(!overlayPermissionEnabled)}
         />
 
         {/* Bottom actions */}
@@ -119,16 +130,12 @@ export default function SettingsScreen() {
         <LinkRow
           icon={<Feather name="file-text" size={22} color="#22d3ee" />}
           label="Privacy Policy"
-          onPress={() =>
-            Linking.openURL('https://www.example.com/privacy')
-          }
+          onPress={() => Linking.openURL('https://www.example.com/privacy')}
         />
         <LinkRow
           icon={<Feather name="file" size={22} color="#22d3ee" />}
           label="Terms & Conditions"
-          onPress={() =>
-            Linking.openURL('https://www.example.com/terms')
-          }
+          onPress={() => Linking.openURL('https://www.example.com/terms')}
         />
         <LinkRow
           icon={<Feather name="headphones" size={22} color="#22d3ee" />}
