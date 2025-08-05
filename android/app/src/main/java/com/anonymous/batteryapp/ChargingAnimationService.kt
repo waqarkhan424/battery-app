@@ -66,7 +66,8 @@ class ChargingAnimationService : Service() {
         return NotificationCompat.Builder(this, channelId)
             .setContentTitle("Battery App")
             .setContentText("Charging animation is running – go to settings to stop")
-            .setSmallIcon(R.drawable.ic_notification) // replace with your own icon
+            // .setSmallIcon(R.drawable.ic_notification) // replace with your own icon
+            .setSmallIcon(R.mipmap.ic_launcher) // TEMPORARY: use default launcher icon
             .setOngoing(true)
             .build()
     }
