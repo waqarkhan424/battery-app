@@ -15,15 +15,27 @@ import androidx.core.app.NotificationCompat
 
 class ChargingAnimationService : Service() {
 
+        // holds the URL of the video to preview
+      private var appliedVideoUrl: String? = null
+
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
             val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
                              status == BatteryManager.BATTERY_STATUS_FULL
-            if (isCharging) {
-                // TODO: show your animation overlay here
+       
+  if (isCharging && appliedVideoUrl != null) {
+              // launch your ReactActivity deep-linked to the video-player route
+              val launch = Intent(context, MainActivity::class.java).apply {
+                  action = Intent.ACTION_VIEW
+                  data = Uri.parse("batteryapp://video-player/${Uri.encode(appliedVideoUrl)}")
+                  flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            context.startActivity(launch)
+
+
             } else {
-                // TODO: hide your animation overlay here
+                 // TODO: hide any native overlay if you add one here
             }
         }
     }
@@ -45,7 +57,8 @@ class ChargingAnimationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Keep the service running if the system kills it
+       // grab the videoUrl extra from the Intent JS passed in
+       appliedVideoUrl = intent?.getStringExtra("videoUrl")
         return START_STICKY
     }
 

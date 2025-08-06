@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { NativeModules } from 'react-native';
 // import { NativeModules, Platform } from 'react-native';
 import { configureReanimatedLogger } from 'react-native-reanimated';
-import ChargingListener from './_charging-listener';
 import './global.css';
 
 configureReanimatedLogger({ strict: false });  // ← turn off strict‑mode warnings
@@ -30,8 +29,6 @@ export default function RootLayout() {
     return (
       <>
 
-{/* Charging listener always active */}
-      <ChargingListener /> 
 
   <Stack>
       {/* Hide header for tab screens */}

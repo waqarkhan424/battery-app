@@ -8,7 +8,9 @@ import { ResizeMode, Video } from 'expo-av';
 import { BatteryState, useBatteryLevel, useBatteryState } from 'expo-battery';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { NativeModules, Text, View } from 'react-native';
+
+const { ChargingServiceModule } = NativeModules;
 
 export default function VideoPlayer() {
   const { videoUrl } = useLocalSearchParams<{ videoUrl: string }>();
@@ -63,8 +65,8 @@ export default function VideoPlayer() {
         onClose={() => setShowSettingsModal(false)}
         onApply={() => {
           setShowSettingsModal(false);
-          // you’ll likely also want to call setAppliedAnimation(...) here
-          console.log('Settings Applied');
+          ChargingServiceModule.startService(decodeURIComponent(videoUrl));
+
         }}
         videoUrl={decodeURIComponent(videoUrl)}
       />
