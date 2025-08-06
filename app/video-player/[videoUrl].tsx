@@ -65,8 +65,8 @@ export default function VideoPlayer() {
         onClose={() => setShowSettingsModal(false)}
         onApply={() => {
           setShowSettingsModal(false);
+          // Start the native service with the applied animation URL
           ChargingServiceModule.startService(decodeURIComponent(videoUrl));
-
         }}
         videoUrl={decodeURIComponent(videoUrl)}
       />
