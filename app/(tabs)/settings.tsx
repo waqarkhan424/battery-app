@@ -8,7 +8,6 @@ import {
 import { Linking, NativeModules, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Destructure the native module we registered on Android
 const { ChargingServiceModule } = NativeModules;
 
 export default function SettingsScreen() {
@@ -66,50 +65,43 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      {/* Fixed Header */}
       <View className="px-4 py-4 bg-background border-surface">
         <Text className="text-white text-2xl font-bold text-center">Settings</Text>
       </View>
 
-      {/* Scrollable Content */}
-      <ScrollView
-        className="flex-1 px-4 pt-4"
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        {/* Toggles */}
+      <ScrollView className="flex-1 px-4 pt-4" contentContainerStyle={{ paddingBottom: 20 }}>
         <ToggleRow
           label="Enable Animations"
           value={enableAnimations}
           onToggle={() => {
             const newValue = !enableAnimations;
             setEnableAnimations(newValue);
-            if (newValue) {
-              // Start the foreground service when animations are enabled
-              ChargingServiceModule.startService();
-            } else {
-              // Stop it when disabled
+            //  Only stop service when disabled
+            if (!newValue) {
               ChargingServiceModule.stopService();
             }
           }}
         />
+
         <ToggleRow
           label="Hide battery percentage"
           value={hideBatteryPercentage}
           onToggle={() => setHideBatteryPercentage(!hideBatteryPercentage)}
         />
+
         <ToggleRow
           label="Keep service always alive"
           value={keepServiceAlive}
           onToggle={() => {
             const newValue = !keepServiceAlive;
             setKeepServiceAlive(newValue);
-            if (newValue) {
-              ChargingServiceModule.startService();
-            } else {
+            //  Only stop service when disabled
+            if (!newValue) {
               ChargingServiceModule.stopService();
             }
           }}
         />
+
         <ToggleRow
           label="Overlay permission enabled"
           value={overlayPermissionEnabled}
