@@ -3,6 +3,7 @@ package com.anonymous.batteryapp
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -16,27 +17,25 @@ import androidx.core.app.NotificationCompat
 
 class ChargingAnimationService : Service() {
 
-        // holds the URL of the video to preview
-      private var appliedVideoUrl: String? = null
+    // holds the URL of the video to preview
+    private var appliedVideoUrl: String? = null
 
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
             val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
                              status == BatteryManager.BATTERY_STATUS_FULL
-       
-  if (isCharging && appliedVideoUrl != null) {
-              // launch your ReactActivity deep-linked to the video-player route
-              val launch = Intent(context, MainActivity::class.java).apply {
-                  action = Intent.ACTION_VIEW
-                  data = Uri.parse("batteryapp://video-player/${Uri.encode(appliedVideoUrl)}")
-                  flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-            context.startActivity(launch)
 
-
+            if (isCharging && appliedVideoUrl != null) {
+                // Launch ReactActivity via deep link
+                val launch = Intent(context, MainActivity::class.java).apply {
+                    action = Intent.ACTION_VIEW
+                    data = Uri.parse("batteryapp://video-player/${Uri.encode(appliedVideoUrl)}")
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+                context.startActivity(launch)
             } else {
-                 // TODO: hide any native overlay if you add one here
+                // TODO: hide any native overlay if you add one here
             }
         }
     }
@@ -47,19 +46,18 @@ class ChargingAnimationService : Service() {
         val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         registerReceiver(batteryReceiver, filter)
 
-        // Create and show a foreground notification
+        // Start in foreground with a full-screen intent notification
         startForeground(NOTIFICATION_ID, buildNotification())
     }
 
     override fun onDestroy() {
-        // Unregister the receiver when the service is destroyed
         unregisterReceiver(batteryReceiver)
         super.onDestroy()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-       // grab the videoUrl extra from the Intent JS passed in
-       appliedVideoUrl = intent?.getStringExtra("videoUrl")
+        // Grab the videoUrl extra from JS and save it
+        appliedVideoUrl = intent?.getStringExtra("videoUrl")
         return START_STICKY
     }
 
@@ -77,12 +75,26 @@ class ChargingAnimationService : Service() {
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
         }
+
+        // Intent for full-screen launch
+        val intent = Intent(this, MainActivity::class.java).apply {
+            action = Intent.ACTION_VIEW
+            data = Uri.parse("batteryapp://video-player/${Uri.encode(appliedVideoUrl)}")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val fullScreenPendingIntent = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         return NotificationCompat.Builder(this, channelId)
             .setContentTitle("Battery App")
             .setContentText("Charging animation is running – go to settings to stop")
-            // .setSmallIcon(R.drawable.ic_notification) // replace with your own icon
-            .setSmallIcon(R.mipmap.ic_launcher) // TEMPORARY: use default launcher icon
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)              // heads-up
+            .setCategory(NotificationCompat.CATEGORY_CALL)             // urgent
+            .setFullScreenIntent(fullScreenPendingIntent, true)        // full-screen when locked
             .build()
     }
 

@@ -11,13 +11,12 @@ class ChargingServiceModule(private val reactContext: ReactApplicationContext) :
 
     override fun getName() = "ChargingServiceModule"
 
-
-   @ReactMethod
-  fun startService(videoUrl: String) {
-      val intent = Intent(reactContext, ChargingAnimationService::class.java).apply {
-          putExtra("videoUrl", videoUrl)
-      }
-
+    /** Start the foreground service and tell it which video to show */
+    @ReactMethod
+    fun startService(videoUrl: String) {
+        val intent = Intent(reactContext, ChargingAnimationService::class.java).apply {
+            putExtra("videoUrl", videoUrl)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             reactContext.startForegroundService(intent)
         } else {
@@ -25,6 +24,7 @@ class ChargingServiceModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
+    /** Stop the foreground service */
     @ReactMethod
     fun stopService() {
         val intent = Intent(reactContext, ChargingAnimationService::class.java)
