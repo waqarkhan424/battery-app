@@ -33,6 +33,11 @@ export default function RootLayout() {
 
       {/* Hide header for see-more */}
       <Stack.Screen name="see-more/[category]" options={{ headerShown: false }} />
+
+      <Stack.Screen
+  name="charging/[videoUrl]"
+  options={{ headerShown: false }}
+/>
     </Stack>
   );
 }

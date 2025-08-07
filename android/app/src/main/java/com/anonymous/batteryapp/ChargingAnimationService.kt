@@ -30,7 +30,7 @@ class ChargingAnimationService : Service() {
             if (isCharging && !appliedVideoUrl.isNullOrBlank()) {
                 val launch = Intent(context, MainActivity::class.java).apply {
                     action = Intent.ACTION_VIEW
-                    data = Uri.parse("batteryapp://video-player/${Uri.encode(appliedVideoUrl!!)}")
+                    data = Uri.parse("batteryapp://charging/${Uri.encode(appliedVideoUrl!!)}")
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
                 context.startActivity(launch)
