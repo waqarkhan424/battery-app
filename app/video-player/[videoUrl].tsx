@@ -6,7 +6,7 @@ import { useSettingsStore } from '@/store/settings';
 import { Ionicons } from '@expo/vector-icons';
 import { ResizeMode, Video } from 'expo-av';
 import { BatteryState, useBatteryLevel, useBatteryState } from 'expo-battery';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { NativeModules, Text, View } from 'react-native';
 
@@ -67,6 +67,7 @@ export default function VideoPlayer() {
           setShowSettingsModal(false);
           // Start the native service with the applied animation URL
           ChargingServiceModule.startService(decodeURIComponent(videoUrl));
+          router.replace('/');
         }}
         videoUrl={decodeURIComponent(videoUrl)}
       />
