@@ -9,13 +9,18 @@ configureReanimatedLogger({ strict: false }); // turn off strict-mode warnings
 
 export default function RootLayout() {
 
- const { enableAnimations, appliedAnimation } = useSettingsStore();
+  const { enableAnimations } = useSettingsStore();
 
- useEffect(() => {
-  if (enableAnimations) {
-    NativeModules.ChargingServiceModule.startService(appliedAnimation ?? '');
-  }
-}, [enableAnimations]);
+
+  useEffect(() => {
+    if (enableAnimations) {
+      // Always start the foreground service (with an empty URL) on app open
+      NativeModules.ChargingServiceModule.startService('');
+    } else {
+      // Stop the service when animations are turned off
+      NativeModules.ChargingServiceModule.stopService();
+    }
+  }, [enableAnimations]);
 
 
   return (
