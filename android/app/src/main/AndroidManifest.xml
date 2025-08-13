@@ -8,20 +8,14 @@
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
-
-
   <!-- keep your service alive in foreground -->
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
   <!-- full-screen intent permission (required on Android 10+) -->
   <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
 
-  <!-- optional: auto-restart after reboot -->
+  <!-- optional: auto-restart after reboot (permission can stay even if receiver is removed) -->
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-
-  <!-- optional wake lock if you need CPU while screen is off -->
-  <!-- <uses-permission android:name="android.permission.WAKE_LOCK"/> -->
-
 
   <queries>
     <intent>
@@ -66,22 +60,13 @@
       </intent-filter>
     </activity>
 
-    <!-- register your foreground service so the system can start it -->
+    <!-- foreground service (type changed → mediaPlayback) -->
     <service
       android:name=".ChargingAnimationService"
       android:exported="false"
-      android:foregroundServiceType="mediaProjection" />
+      android:foregroundServiceType="mediaPlayback" />
 
-   <!-- optional: receiver to restart service on device boot -->
-    <receiver
-      android:name=".BootCompletedReceiver"
-      android:enabled="true"
-      android:exported="false">
-      <intent-filter>
-        <action android:name="android.intent.action.BOOT_COMPLETED"/>
-      </intent-filter>
-    </receiver>
-
+    <!-- NOTE: removed the BootCompletedReceiver block -->
 
   </application>
 </manifest>
