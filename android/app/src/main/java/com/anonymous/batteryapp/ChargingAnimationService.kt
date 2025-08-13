@@ -26,35 +26,34 @@ class ChargingAnimationService : Service() {
             val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
                              status == BatteryManager.BATTERY_STATUS_FULL
 
-            // only deep-link into /video-player if we've actually got a non-empty URL
+            // only deep-link if we actually have a non-empty URL
             if (isCharging && !appliedVideoUrl.isNullOrBlank()) {
                 val launch = Intent(context, MainActivity::class.java).apply {
                     action = Intent.ACTION_VIEW
+                    // EDIT #2 — use a single route: /charging/[videoUrl]
                     data = Uri.parse("batteryapp://charging/${Uri.encode(appliedVideoUrl!!)}")
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
                 context.startActivity(launch)
             } else {
-                // TODO: hide any native overlay if you add one here
+                // no-op (or hide any native overlay here if you add one)
             }
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        // Register the battery receiver
-        val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-        registerReceiver(batteryReceiver, filter)
-        // NOTE: we do NOT call startForeground() here any more
+        registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Grab the videoUrl extra from JS and save it
-        appliedVideoUrl = intent?.getStringExtra("videoUrl")
+        // EDIT #1 — do NOT overwrite a good URL with an empty one
+        val maybeUrl = intent?.getStringExtra("videoUrl")?.trim()
+        if (!maybeUrl.isNullOrBlank()) {
+            appliedVideoUrl = maybeUrl
+        }
 
-        // Now start the service in the foreground, after URL is set
         startForeground(NOTIFICATION_ID, buildNotification())
-
         return START_STICKY
     }
 
@@ -68,41 +67,40 @@ class ChargingAnimationService : Service() {
     private fun buildNotification(): Notification {
         val channelId = "charging_animation_channel"
 
-        // Create notification channel for API 26+
+        // channel for API 26+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId,
-                "Charging Animation Service",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                setShowBadge(false)
+            val mgr = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            if (mgr.getNotificationChannel(channelId) == null) {
+                mgr.createNotificationChannel(
+                    NotificationChannel(
+                        channelId,
+                        "Charging Animation",
+                        NotificationManager.IMPORTANCE_LOW
+                    ).apply { description = "Keeps the charging animation service running" }
+                )
             }
-            getSystemService(NotificationManager::class.java)
-                .createNotificationChannel(channel)
         }
 
-        val builder = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Battery App")
-            .setContentText("Charging animation is running – go to settings to stop")
+        // EDIT #2 (also in notification) — deep-link to the same /charging route
+        val contentIntent = Intent(this, MainActivity::class.java).apply {
+            action = Intent.ACTION_VIEW
+            val targetUrl = appliedVideoUrl ?: ""
+            data = Uri.parse("batteryapp://charging/${Uri.encode(targetUrl)}")
+        }
+        val piFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        else PendingIntent.FLAG_UPDATE_CURRENT
+
+        val pendingIntent = PendingIntent.getActivity(this, 0, contentIntent, piFlags)
+
+        return NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("Charging animation enabled")
+            .setContentText("Will auto-play when you plug in your phone")
             .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)  // normal priority
-
-        // Only attach a full-screen deep-link when we actually have a URL
-        if (!appliedVideoUrl.isNullOrBlank()) {
-            val intent = Intent(this, MainActivity::class.java).apply {
-                action = Intent.ACTION_VIEW
-                data = Uri.parse("batteryapp://video-player/${Uri.encode(appliedVideoUrl)}")
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-            val fullScreenPendingIntent = PendingIntent.getActivity(
-                this, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            builder.setFullScreenIntent(fullScreenPendingIntent, true)
-        }
-
-        return builder.build()
+            .setContentIntent(pendingIntent)
+            // full-screen intent is optional; leaving it out avoids surprise popups
+            .build()
     }
 
     companion object {
