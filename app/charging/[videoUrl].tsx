@@ -21,9 +21,7 @@ export default function ChargingScreen() {
       let active = true;
       (async () => {
         try {
-          if (active) {
-            await playerRef.current?.playFromPositionAsync(0);
-          }
+          if (active) await playerRef.current?.playAsync();
         } catch {}
       })();
       return () => {
@@ -45,15 +43,17 @@ export default function ChargingScreen() {
 
   return (
     <View className="flex-1 bg-black">
+      {/* Header with current time */}
       <VideoHeader />
 
+      {/* Looping animation video */}
       <Video
         key={uri}
         ref={playerRef}
         source={{ uri }}
         style={{ width: '100%', height: '100%' }}
         resizeMode={ResizeMode.CONTAIN}
-        shouldPlay={false}  // start only when ready to display
+        shouldPlay={false} // start only when ready to display
         isLooping
         onReadyForDisplay={async () => {
           try {
@@ -65,6 +65,7 @@ export default function ChargingScreen() {
         }}
       />
 
+      {/* Battery icon + percentage overlay */}
       <View className="absolute bottom-6 left-0 right-0 items-center">
         <View className="w-14 h-14 rounded-full bg-slate-800 items-center justify-center">
           <Ionicons name="battery-charging-outline" size={28} color="white" />
