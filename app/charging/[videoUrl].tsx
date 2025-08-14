@@ -21,9 +21,7 @@ export default function ChargingScreen() {
       let active = true;
       (async () => {
         try {
-          if (active) {
-            await playerRef.current?.playFromPositionAsync(0);
-          }
+          if (active) await playerRef.current?.playAsync();
         } catch {}
       })();
       return () => {
@@ -55,12 +53,11 @@ export default function ChargingScreen() {
         source={{ uri }}
         style={{ width: '100%', height: '100%' }}
         resizeMode={ResizeMode.CONTAIN}
-        shouldPlay // start as soon as loaded
+        shouldPlay={false} // start only when ready to display
         isLooping
-        onLoad={async () => {
+        onReadyForDisplay={async () => {
           try {
-            // ensure a clean start from first frame
-            await playerRef.current?.playFromPositionAsync(0);
+            await playerRef.current?.playAsync();
           } catch {}
         }}
         onError={(e) => {
