@@ -28,15 +28,12 @@ class MainActivity : ReactActivity() {
       )
     }
 
-    // (keep splash registration as before)
     SplashScreenManager.registerOnActivity(this)
     super.onCreate(null)
   }
 
-  /** Name of the main component registered from JavaScript */
   override fun getMainComponentName(): String = "main"
 
-  /** Delegate / New Architecture plumbing (unchanged) */
   override fun createReactActivityDelegate(): ReactActivityDelegate {
     return ReactActivityDelegateWrapper(
       this,
@@ -49,7 +46,6 @@ class MainActivity : ReactActivity() {
     )
   }
 
-  /** Back button behavior alignment (unchanged) */
   override fun invokeDefaultOnBackPressed() {
     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
       if (!moveTaskToBack(false)) {
