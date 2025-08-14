@@ -4,7 +4,7 @@ import CloseButton from '@/components/close-button';
 import VideoHeader from '@/components/video-header';
 import { ResizeMode, Video } from 'expo-av';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { NativeModules, View } from 'react-native';
 
 const { ChargingServiceModule } = NativeModules;
@@ -13,8 +13,10 @@ export default function VideoPlayer() {
   const { videoUrl } = useLocalSearchParams<{ videoUrl: string }>();
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const playerRef = useRef<Video>(null);
 
   if (!videoUrl) return null;
+  const uri = decodeURIComponent(videoUrl);
 
   return (
     <View className="flex-1 bg-black">
@@ -22,11 +24,18 @@ export default function VideoPlayer() {
       <VideoHeader />
 
       <Video
-        source={{ uri: decodeURIComponent(videoUrl) }}
+        key={uri}
+        ref={playerRef}
+        source={{ uri }}
         style={{ width: '100%', height: '100%' }}
         resizeMode={ResizeMode.CONTAIN}
-        shouldPlay
+        shouldPlay={false}
         isLooping
+        onReadyForDisplay={async () => {
+          try {
+            await playerRef.current?.playAsync();
+          } catch {}
+        }}
       />
 
       {showControls && (
@@ -41,10 +50,11 @@ export default function VideoPlayer() {
         onClose={() => setShowSettingsModal(false)}
         onApply={() => {
           setShowSettingsModal(false);
-          ChargingServiceModule.startService(decodeURIComponent(videoUrl));
+          // Pass the stable file:// path to the service
+          ChargingServiceModule.startService(uri);
           router.replace('/');
         }}
-        videoUrl={decodeURIComponent(videoUrl)}
+        videoUrl={uri}
       />
     </View>
   );
