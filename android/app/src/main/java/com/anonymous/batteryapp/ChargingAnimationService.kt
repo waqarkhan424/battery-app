@@ -17,15 +17,13 @@ import androidx.core.app.NotificationCompat
 
 class ChargingAnimationService : Service() {
 
-    // MUST be 'var' (we update it in onStartCommand)
+    // Persisted across process restarts
     private var appliedVideoUrl: String? = null
 
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
             val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
-
-            // Compute once, no reassignment (avoids "val cannot be reassigned")
             val isChargingNow =
                 (action == Intent.ACTION_POWER_CONNECTED) ||
                 status == BatteryManager.BATTERY_STATUS_CHARGING ||
@@ -44,7 +42,12 @@ class ChargingAnimationService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        // Listen for fast plug event + battery status changes
+
+        // Restore last applied URL so we still work after process death
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        appliedVideoUrl = prefs.getString(KEY_APPLIED_URL, null)
+
+        // Listen for plug/unplug + battery status
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_POWER_CONNECTED)
             addAction(Intent.ACTION_POWER_DISCONNECTED)
@@ -54,10 +57,13 @@ class ChargingAnimationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Update URL only if a non-blank value is provided
-        val maybeUrl = intent?.getStringExtra("videoUrl")?.trim()
-        if (!maybeUrl.isNullOrBlank()) {
-            appliedVideoUrl = maybeUrl
+        // Update URL if a fresh one is provided, and persist it
+        intent?.getStringExtra("videoUrl")?.trim()?.takeIf { it.isNotBlank() }?.let { url ->
+            appliedVideoUrl = url
+            getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putString(KEY_APPLIED_URL, url)
+                .apply()
         }
 
         startForeground(NOTIFICATION_ID, buildNotification())
@@ -86,7 +92,6 @@ class ChargingAnimationService : Service() {
             }
         }
 
-        // If we have a URL, deep-link to /charging; else open app home
         val contentIntent = if (!appliedVideoUrl.isNullOrBlank()) {
             Intent(this, MainActivity::class.java).apply {
                 action = Intent.ACTION_VIEW
@@ -118,5 +123,7 @@ class ChargingAnimationService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 1001
+        private const val PREFS_NAME = "charging_prefs"
+        private const val KEY_APPLIED_URL = "appliedVideoUrl"
     }
 }

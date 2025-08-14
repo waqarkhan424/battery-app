@@ -15,22 +15,17 @@ export default function ChargingScreen() {
   const uri = videoUrl ? decodeURIComponent(videoUrl) : null;
   if (!uri) return null;
 
-  // Ensure playback starts after a cold-start (when app was swiped away)
+  // Fallback: if activity is already in foreground, kick playback on focus
   useFocusEffect(
     useCallback(() => {
       let active = true;
       (async () => {
         try {
-          if (active) {
-            await playerRef.current?.playAsync();
-          }
-        } catch {
-          // ignore
-        }
+          if (active) await playerRef.current?.playAsync();
+        } catch {}
       })();
       return () => {
         active = false;
-        // optional: pause when leaving
         playerRef.current?.pauseAsync().catch(() => {});
       };
     }, [uri])
@@ -43,20 +38,17 @@ export default function ChargingScreen() {
 
       {/* Looping animation video */}
       <Video
-        key={uri} // force a fresh mount if uri changes
+        key={uri}
         ref={playerRef}
         source={{ uri }}
         style={{ width: '100%', height: '100%' }}
         resizeMode={ResizeMode.CONTAIN}
-        // we start playback explicitly in onLoad/focus (more reliable after cold-start)
-        shouldPlay={false}
+        shouldPlay={false}  // start only when ready to display
         isLooping
-        onLoad={async () => {
+        onReadyForDisplay={async () => {
           try {
             await playerRef.current?.playAsync();
-          } catch {
-            // ignore
-          }
+          } catch {}
         }}
       />
 
