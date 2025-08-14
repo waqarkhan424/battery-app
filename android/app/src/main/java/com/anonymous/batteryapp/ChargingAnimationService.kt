@@ -16,12 +16,17 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 
 class ChargingAnimationService : Service() {
 
     // Persisted across process restarts
     private var appliedVideoUrl: String? = null
+
+    // Debounce so we don't spam-launch the Activity after cold kill
+    private var lastLaunchMs: Long = 0L
+    private val launchCooldownMs = 2500L
 
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -32,28 +37,37 @@ class ChargingAnimationService : Service() {
                 status == BatteryManager.BATTERY_STATUS_CHARGING ||
                 status == BatteryManager.BATTERY_STATUS_FULL
 
-            if (isChargingNow && !appliedVideoUrl.isNullOrBlank()) {
-                // Prepare deep link to charging screen
-                val launch = Intent(context, MainActivity::class.java).apply {
-                    this.action = Intent.ACTION_VIEW
-                    data = Uri.parse("batteryapp://charging/${Uri.encode(appliedVideoUrl!!)}")
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                }
+            if (!isChargingNow || appliedVideoUrl.isNullOrBlank()) return
 
-                // Short wake lock + slight delay to let the device wake and JS mount
-                val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-                @Suppress("WakelockTimeout")
-                val wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "batteryapp:chargeWake")
-                try { wl.acquire(5_000) } catch (_: Throwable) {}
+            // Debounce multiple broadcasts
+            val now = SystemClock.elapsedRealtime()
+            if (now - lastLaunchMs < launchCooldownMs) return
+            lastLaunchMs = now
 
-                Handler(Looper.getMainLooper()).postDelayed({
-                    try {
-                        context.startActivity(launch)
-                    } finally {
-                        try { if (wl.isHeld) wl.release() } catch (_: Throwable) {}
-                    }
-                }, 650) // 600–800ms works well
+            // Prepare deep link to charging screen
+            val launch = Intent(context, MainActivity::class.java).apply {
+                action = Intent.ACTION_VIEW
+                data = Uri.parse("batteryapp://charging/${Uri.encode(appliedVideoUrl!!)}")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP
             }
+
+            // Short wake lock + slight delay to let device wake and JS mount
+            val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+            @Suppress("WakelockTimeout")
+            val wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "batteryapp:chargeWake")
+            try {
+                wl.acquire(5_000) // Safety timeout
+            } catch (_: Throwable) { /* no-op */ }
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                try {
+                    context.startActivity(launch)
+                } finally {
+                    try { if (wl.isHeld) wl.release() } catch (_: Throwable) {}
+                }
+            }, 650) // 600–800ms works well
         }
     }
 
@@ -68,6 +82,7 @@ class ChargingAnimationService : Service() {
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_POWER_CONNECTED)
             addAction(Intent.ACTION_POWER_DISCONNECTED)
+            // ACTION_BATTERY_CHANGED may be noisy; keep it but our debounce prevents duplicates
             addAction(Intent.ACTION_BATTERY_CHANGED)
         }
         registerReceiver(batteryReceiver, filter)
