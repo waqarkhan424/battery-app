@@ -12,7 +12,10 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.BatteryManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 
 class ChargingAnimationService : Service() {
@@ -30,12 +33,28 @@ class ChargingAnimationService : Service() {
                 status == BatteryManager.BATTERY_STATUS_FULL
 
             if (isChargingNow && !appliedVideoUrl.isNullOrBlank()) {
+                // Prepare deep link to charging screen
                 val launch = Intent(context, MainActivity::class.java).apply {
                     this.action = Intent.ACTION_VIEW
                     data = Uri.parse("batteryapp://charging/${Uri.encode(appliedVideoUrl!!)}")
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
-                context.startActivity(launch)
+
+                // Short wake lock + slight delay to let the device wake and JS mount
+                val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+                @Suppress("WakelockTimeout")
+                val wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "batteryapp:chargeWake")
+                try {
+                    wl.acquire(5_000) // auto-releases after 5s if not released below
+                } catch (_: Throwable) { /* no-op */ }
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    try {
+                        context.startActivity(launch)
+                    } finally {
+                        try { if (wl.isHeld) wl.release() } catch (_: Throwable) {}
+                    }
+                }, 650) // 600–800ms works well
             }
         }
     }

@@ -3,8 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ResizeMode, Video } from 'expo-av';
 import { useBatteryLevel } from 'expo-battery';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
-import React, { useCallback, useRef } from 'react';
-import { Text, View } from 'react-native';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { AppState, Text, View } from 'react-native';
 
 export default function ChargingScreen() {
   const { videoUrl } = useLocalSearchParams<{ videoUrl: string }>();
@@ -15,13 +15,15 @@ export default function ChargingScreen() {
   const uri = videoUrl ? decodeURIComponent(videoUrl) : null;
   if (!uri) return null;
 
-  // Fallback: if activity is already in foreground, kick playback on focus
+  // Kick playback whenever the screen gains focus (fallback)
   useFocusEffect(
     useCallback(() => {
       let active = true;
       (async () => {
         try {
-          if (active) await playerRef.current?.playAsync();
+          if (active) {
+            await playerRef.current?.playFromPositionAsync(0);
+          }
         } catch {}
       })();
       return () => {
@@ -30,6 +32,16 @@ export default function ChargingScreen() {
       };
     }, [uri])
   );
+
+  // If app came to foreground after a cold start, re-issue play
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'active') {
+        playerRef.current?.playFromPositionAsync(0).catch(() => {});
+      }
+    });
+    return () => sub.remove();
+  }, [uri]);
 
   return (
     <View className="flex-1 bg-black">
@@ -43,12 +55,16 @@ export default function ChargingScreen() {
         source={{ uri }}
         style={{ width: '100%', height: '100%' }}
         resizeMode={ResizeMode.CONTAIN}
-        shouldPlay={false}  // start only when ready to display
+        shouldPlay // start as soon as loaded
         isLooping
-        onReadyForDisplay={async () => {
+        onLoad={async () => {
           try {
-            await playerRef.current?.playAsync();
+            // ensure a clean start from first frame
+            await playerRef.current?.playFromPositionAsync(0);
           } catch {}
+        }}
+        onError={(e) => {
+          console.warn('Video error', e);
         }}
       />
 
