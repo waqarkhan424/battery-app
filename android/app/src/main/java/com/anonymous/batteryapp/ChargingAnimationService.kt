@@ -44,9 +44,7 @@ class ChargingAnimationService : Service() {
                 val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
                 @Suppress("WakelockTimeout")
                 val wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "batteryapp:chargeWake")
-                try {
-                    wl.acquire(5_000) // auto-releases after 5s if not released below
-                } catch (_: Throwable) { /* no-op */ }
+                try { wl.acquire(5_000) } catch (_: Throwable) {}
 
                 Handler(Looper.getMainLooper()).postDelayed({
                     try {
