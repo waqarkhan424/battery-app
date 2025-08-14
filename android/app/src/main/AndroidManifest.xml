@@ -9,7 +9,7 @@
 
   <!-- keep your service alive in foreground -->
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-  <!-- required on Android 14+ when using mediaPlayback service type -->
+  <!-- Android 14+ with mediaPlayback service type -->
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
 
   <!-- optional: auto-restart after reboot (safe to keep or remove) -->
