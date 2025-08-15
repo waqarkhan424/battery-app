@@ -57,12 +57,21 @@
       </intent-filter>
     </activity>
 
+    <!-- NEW: tiny native fullscreen player for plug-in events -->
+    <activity
+      android:name=".PlayerActivity"
+      android:exported="false"
+      android:launchMode="singleTop"
+      android:screenOrientation="portrait"
+      android:turnScreenOn="true"
+      android:showWhenLocked="true"
+      android:theme="@style/AppTheme" />
+
     <!-- foreground service (correct type for video playback) -->
     <service
       android:name=".ChargingAnimationService"
       android:exported="false"
       android:foregroundServiceType="mediaPlayback" />
 
-    <!-- no BootCompletedReceiver until we implement it -->
   </application>
 </manifest>
