@@ -9,7 +9,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.Uri
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Handler
@@ -44,10 +43,9 @@ class ChargingAnimationService : Service() {
             if (now - lastLaunchMs < launchCooldownMs) return
             lastLaunchMs = now
 
-            // Prepare deep link to charging screen
-            val launch = Intent(context, MainActivity::class.java).apply {
-                setAction(Intent.ACTION_VIEW)
-                setData(Uri.parse("batteryapp://charging/${Uri.encode(appliedVideoUrl!!)}"))
+            //  Launch lightweight native PlayerActivity instead of deep-linking into RN
+            val launch = Intent(context, PlayerActivity::class.java).apply {
+                putExtra("videoUrl", appliedVideoUrl!!)
                 addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -55,12 +53,12 @@ class ChargingAnimationService : Service() {
                 )
             }
 
-            // Short wake lock + slight delay to let device wake and JS mount
+            // Short wake lock + slight delay to let device wake the screen
             val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
             @Suppress("WakelockTimeout")
             val wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "batteryapp:chargeWake")
             try {
-                wl.acquire(5_000) // Safety timeout
+                wl.acquire(5_000) // safety timeout
             } catch (_: Throwable) { /* no-op */ }
 
             Handler(Looper.getMainLooper()).postDelayed({
@@ -69,7 +67,7 @@ class ChargingAnimationService : Service() {
                 } finally {
                     try { if (wl.isHeld) wl.release() } catch (_: Throwable) {}
                 }
-            }, 650) // 600–800ms works well
+            }, 450) // small debounce helps reliability on cold/wake cases
         }
     }
 
@@ -84,7 +82,6 @@ class ChargingAnimationService : Service() {
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_POWER_CONNECTED)
             addAction(Intent.ACTION_POWER_DISCONNECTED)
-            // ACTION_BATTERY_CHANGED may be noisy; we keep it, debounce prevents duplicates
             addAction(Intent.ACTION_BATTERY_CHANGED)
         }
         registerReceiver(batteryReceiver, filter)
@@ -126,14 +123,14 @@ class ChargingAnimationService : Service() {
             }
         }
 
+        //  Tap notification → open tiny native player (not RN)
         val contentIntent = if (!appliedVideoUrl.isNullOrBlank()) {
-            Intent(this, MainActivity::class.java).apply {
-                setAction(Intent.ACTION_VIEW)
-                setData(Uri.parse("batteryapp://charging/${Uri.encode(appliedVideoUrl!!)}"))
+            Intent(this, PlayerActivity::class.java).apply {
+                putExtra("videoUrl", appliedVideoUrl!!)
             }
         } else {
             Intent(this, MainActivity::class.java).apply {
-                setAction(Intent.ACTION_MAIN)
+                action = Intent.ACTION_MAIN
                 addCategory(Intent.CATEGORY_LAUNCHER)
             }
         }
