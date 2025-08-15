@@ -20,10 +20,7 @@ import androidx.core.app.NotificationCompat
 
 class ChargingAnimationService : Service() {
 
-    // Persisted across process restarts
     private var appliedVideoUrl: String? = null
-
-    // Debounce so we don't spam-launch the Activity after cold kill
     private var lastLaunchMs: Long = 0L
     private val launchCooldownMs = 2500L
 
@@ -38,12 +35,10 @@ class ChargingAnimationService : Service() {
 
             if (!isChargingNow || appliedVideoUrl.isNullOrBlank()) return
 
-            // Debounce multiple broadcasts
             val now = SystemClock.elapsedRealtime()
             if (now - lastLaunchMs < launchCooldownMs) return
             lastLaunchMs = now
 
-            //  Launch lightweight native PlayerActivity instead of deep-linking into RN
             val launch = Intent(context, PlayerActivity::class.java).apply {
                 putExtra("videoUrl", appliedVideoUrl!!)
                 addFlags(
@@ -53,13 +48,10 @@ class ChargingAnimationService : Service() {
                 )
             }
 
-            // Short wake lock + slight delay to let device wake the screen
             val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
             @Suppress("WakelockTimeout")
             val wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "batteryapp:chargeWake")
-            try {
-                wl.acquire(5_000) // safety timeout
-            } catch (_: Throwable) { /* no-op */ }
+            try { wl.acquire(5_000) } catch (_: Throwable) {}
 
             Handler(Looper.getMainLooper()).postDelayed({
                 try {
@@ -67,18 +59,15 @@ class ChargingAnimationService : Service() {
                 } finally {
                     try { if (wl.isHeld) wl.release() } catch (_: Throwable) {}
                 }
-            }, 450) // small debounce helps reliability on cold/wake cases
+            }, 450)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-
-        // Restore last applied URL so we still work after process death
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         appliedVideoUrl = prefs.getString(KEY_APPLIED_URL, null)
 
-        // Listen for plug/unplug + battery status
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_POWER_CONNECTED)
             addAction(Intent.ACTION_POWER_DISCONNECTED)
@@ -88,7 +77,6 @@ class ChargingAnimationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Update URL if a fresh one is provided, and persist it
         intent?.getStringExtra("videoUrl")?.trim()?.takeIf { it.isNotBlank() }?.let { url ->
             appliedVideoUrl = url
             getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -123,7 +111,6 @@ class ChargingAnimationService : Service() {
             }
         }
 
-        //  Tap notification → open tiny native player (not RN)
         val contentIntent = if (!appliedVideoUrl.isNullOrBlank()) {
             Intent(this, PlayerActivity::class.java).apply {
                 putExtra("videoUrl", appliedVideoUrl!!)
