@@ -4,7 +4,6 @@
     "slug": "battery-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "batteryapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -27,10 +26,10 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "d3fd7c0d-6818-447f-bb38-5183d6f2aab0"
-      }
+      "router": {}
+    },
+    "eas": {
+      "projectId": "d3fd7c0d-6818-447f-bb38-5183d6f2aab0"
     }
   }
 }
