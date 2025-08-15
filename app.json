@@ -4,8 +4,12 @@
     "slug": "battery-app",
     "version": "1.0.0",
     "orientation": "portrait",
+
+    "scheme": "batteryapp",
+
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+
     "ios": {
       "supportsTablet": true
     },
