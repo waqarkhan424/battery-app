@@ -28,7 +28,7 @@ import java.util.Locale
  * - Runs before RN/JS is warm
  * - Loops the saved MP4
  * - Shows over lockscreen and turns screen on
- * - NOW: draws time + battery overlay on top of the video
+ * - Draws time + battery overlay on top of the video
  */
 class PlayerActivity : AppCompatActivity() {
 
@@ -41,7 +41,6 @@ class PlayerActivity : AppCompatActivity() {
     private val timeTick = object : Runnable {
         override fun run() {
             updateTime()
-            // update once per second so lockscreen clock feels live
             timeHandler.postDelayed(this, 1000)
         }
     }
@@ -62,7 +61,6 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // make visible when device is locked; turn screen on
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
@@ -78,7 +76,7 @@ class PlayerActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
-        // Root container
+        // Root
         val container = FrameLayout(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -87,7 +85,7 @@ class PlayerActivity : AppCompatActivity() {
             )
         }
 
-        // Video view (full screen, behind overlays)
+        // Video (behind overlays)
         videoView = VideoView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -97,42 +95,37 @@ class PlayerActivity : AppCompatActivity() {
         }
         container.addView(videoView)
 
-        // ======= Overlays =======
+        // ===== Overlays =====
 
-        // Top time text
+        // Time (top-center)
         timeText = TextView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.TOP or Gravity.CENTER_HORIZONTAL
-            ).apply {
-                topMargin = dp(18)
-            }
+            ).apply { topMargin = dp(18) }
             textSize = 22f
             setTextColor(Color.WHITE)
             gravity = Gravity.CENTER
             setShadowLayer(6f, 0f, 0f, Color.parseColor("#80000000"))
-            text = "" // filled by updateTime()
         }
         container.addView(timeText)
 
-        // Bottom battery cluster (⚡ inside a circle + percentage below)
+        // Battery cluster (bottom-center)
         val bottomCluster = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-            ).apply {
-                bottomMargin = dp(24)
-            }
+            ).apply { bottomMargin = dp(24) }
             gravity = Gravity.CENTER_HORIZONTAL
         }
 
         val circleBg = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = dp(999).toFloat()
-            setColor(Color.parseColor("#1F1F1F")) // translucent dark
+            setColor(Color.parseColor("#1F1F1F"))
         }
 
         batteryIconText = TextView(this).apply {
@@ -141,21 +134,17 @@ class PlayerActivity : AppCompatActivity() {
             gravity = Gravity.CENTER
             textSize = 24f
             setTextColor(Color.WHITE)
-            text = "⚡"
         }
 
         batteryPctText = TextView(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                topMargin = dp(10)
-            }
+            ).apply { topMargin = dp(10) }
             gravity = Gravity.CENTER
             textSize = 18f
             setTextColor(Color.WHITE)
             setShadowLayer(6f, 0f, 0f, Color.parseColor("#80000000"))
-            text = "" // filled by battery receiver
         }
 
         bottomCluster.addView(batteryIconText)
@@ -164,7 +153,6 @@ class PlayerActivity : AppCompatActivity() {
 
         setContentView(container)
 
-        // Start playback
         playFromIntent(intent)
     }
 
@@ -175,22 +163,17 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // start clock updates
         timeHandler.post(timeTick)
 
-        // listen for battery updates (ACTION_BATTERY_CHANGED is sticky)
         val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         val sticky = registerReceiver(batteryReceiver, filter)
-        // prime initial value if sticky intent was returned
         if (sticky != null) batteryReceiver.onReceive(this, sticky)
     }
 
     override fun onPause() {
         super.onPause()
         timeHandler.removeCallbacks(timeTick)
-        try {
-            unregisterReceiver(batteryReceiver)
-        } catch (_: Throwable) {}
+        try { unregisterReceiver(batteryReceiver) } catch (_: Throwable) {}
     }
 
     private fun playFromIntent(intent: Intent) {
@@ -209,20 +192,17 @@ class PlayerActivity : AppCompatActivity() {
             videoView.start()
         }
         videoView.setOnErrorListener { _, _, _ ->
-            // Swallow errors to avoid getting stuck behind lockscreen
             finish()
             true
         }
     }
 
     private fun updateTime() {
-        // locale-aware short time like "7:05 PM"
         val fmt = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault())
         timeText.text = fmt.format(Date())
     }
 
-    private fun dp(v: Int): Int =
-        (v * resources.displayMetrics.density).toInt()
+    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
     override fun onDestroy() {
         try { videoView.stopPlayback() } catch (_: Throwable) {}
