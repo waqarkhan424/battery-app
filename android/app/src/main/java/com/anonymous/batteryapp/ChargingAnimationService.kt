@@ -46,11 +46,13 @@ class ChargingAnimationService : Service() {
 
             // Prepare deep link to charging screen
             val launch = Intent(context, MainActivity::class.java).apply {
-                action = Intent.ACTION_VIEW
-                data = Uri.parse("batteryapp://charging/${Uri.encode(appliedVideoUrl!!)}")
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP
+                setAction(Intent.ACTION_VIEW)
+                setData(Uri.parse("batteryapp://charging/${Uri.encode(appliedVideoUrl!!)}"))
+                addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+                )
             }
 
             // Short wake lock + slight delay to let device wake and JS mount
@@ -82,7 +84,7 @@ class ChargingAnimationService : Service() {
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_POWER_CONNECTED)
             addAction(Intent.ACTION_POWER_DISCONNECTED)
-            // ACTION_BATTERY_CHANGED may be noisy; keep it but our debounce prevents duplicates
+            // ACTION_BATTERY_CHANGED may be noisy; we keep it, debounce prevents duplicates
             addAction(Intent.ACTION_BATTERY_CHANGED)
         }
         registerReceiver(batteryReceiver, filter)
@@ -126,12 +128,12 @@ class ChargingAnimationService : Service() {
 
         val contentIntent = if (!appliedVideoUrl.isNullOrBlank()) {
             Intent(this, MainActivity::class.java).apply {
-                action = Intent.ACTION_VIEW
-                data = Uri.parse("batteryapp://charging/${Uri.encode(appliedVideoUrl!!)}")
+                setAction(Intent.ACTION_VIEW)
+                setData(Uri.parse("batteryapp://charging/${Uri.encode(appliedVideoUrl!!)}"))
             }
         } else {
             Intent(this, MainActivity::class.java).apply {
-                action = Intent.ACTION_MAIN
+                setAction(Intent.ACTION_MAIN)
                 addCategory(Intent.CATEGORY_LAUNCHER)
             }
         }
