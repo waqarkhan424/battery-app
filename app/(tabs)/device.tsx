@@ -43,10 +43,9 @@ export default function DeviceInfoScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      {/* Simple header */}
-      <View className="px-4 py-4">
-        <Text className="text-white text-2xl font-bold">Your Device</Text>
-        <Text className="text-secondary mt-1">
+      {/* Simple header (centered subtitle only) */}
+      <View className="px-4 py-4 items-center">
+        <Text className="text-secondary mt-1 text-center">
           Basic information about your phone
         </Text>
       </View>
