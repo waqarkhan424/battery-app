@@ -1,6 +1,5 @@
 import ApplySettingsModal from '@/components/apply-settings-modal';
-import BottomControls from '@/components/bottom-controls';
-import CloseButton from '@/components/close-button';
+import PreviewActions from '@/components/preview-actions';
 import { ResizeMode, Video } from 'expo-av';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
@@ -18,7 +17,7 @@ export default function VideoPlayer() {
 
   return (
     <View className="flex-1 bg-black">
-      <CloseButton />
+      <PreviewActions onOpenModal={() => setShowSettingsModal(true)} />
 
       <Video
         key={uri}
@@ -34,8 +33,6 @@ export default function VideoPlayer() {
           } catch {}
         }}
       />
-
-      <BottomControls onOpenModal={() => setShowSettingsModal(true)} />
 
       <ApplySettingsModal
         visible={showSettingsModal}
