@@ -5,58 +5,51 @@ import { useCallback, useEffect, useState } from 'react';
 
 /**
  * We persist a copy under FileSystem.documentDirectory ("file://").
- * This avoids flaky content:// URIs after process death.
+ * This avoids flaky content:// URIs after process death. We also add to the
+ * gallery (best-effort) for user visibility.
  */
 export function useVideoDownload(videoUrl: string) {
   const [localUri, setLocalUri] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const fileName = videoUrl.split('/').pop()!;
-  const tempFileUri = `${FileSystem.cacheDirectory}${fileName}`;
-  const appDir = `${FileSystem.documentDirectory}videos/`;
-  const appFileUri = `${appDir}${fileName}`;
+  const fileName = videoUrl.split('/').pop() || `video-${Date.now()}.mp4`;
+  const tempFileUri = FileSystem.cacheDirectory! + fileName;
+
+  const appDir = FileSystem.documentDirectory! + 'BatteryAnimations/';
+  const appFileUri = appDir + fileName;
 
   const ensureAppDir = async () => {
-    try {
-      const info = await FileSystem.getInfoAsync(appDir);
-      if (!info.exists) {
-        await FileSystem.makeDirectoryAsync(appDir, { intermediates: true });
-      }
-    } catch {}
+    const dirInfo = await FileSystem.getInfoAsync(appDir);
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(appDir, { intermediates: true });
+    }
   };
 
   const checkIfVideoExists = useCallback(async () => {
     try {
-      // Prefer our sandbox copy if present
+      // If it's already in our sandbox folder, use that
       const appInfo = await FileSystem.getInfoAsync(appFileUri);
       if (appInfo.exists) {
         setLocalUri(appFileUri);
         return;
       }
 
-      // Optional: look in gallery and offer play if found (but we’ll still copy)
+      // Otherwise try to find it in MediaLibrary by file name
       const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== 'granted') return;
-
-      const album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
-      if (!album) return;
-
-      const assets = await MediaLibrary.getAssetsAsync({
-        mediaType: 'video',
-        first: 1000,
-        album,
-      });
-
-      const matched = assets.assets.find(a => a.filename === fileName);
-      if (matched) {
-        // Copy out to our sandbox to get a stable file:// path
-        await ensureAppDir();
-        // Some assets expose content://; copyAsync can ingest via its localUri
-        const info = await MediaLibrary.getAssetInfoAsync(matched);
-        if (info.localUri) {
-          await FileSystem.copyAsync({ from: info.localUri, to: appFileUri });
-          setLocalUri(appFileUri);
+      if (status === 'granted') {
+        const assets = await MediaLibrary.getAssetsAsync({
+          mediaType: 'video',
+          first: 200,
+        });
+        const matched = assets.assets.find((a) => a.filename?.includes(fileName));
+        if (matched) {
+          // copyAsync can ingest via its localUri
+          const info = await MediaLibrary.getAssetInfoAsync(matched);
+          if (info.localUri) {
+            await FileSystem.copyAsync({ from: info.localUri, to: appFileUri });
+            setLocalUri(appFileUri);
+          }
         }
       }
     } catch (error) {
@@ -111,13 +104,12 @@ export function useVideoDownload(videoUrl: string) {
           }
         }
       } catch (e) {
-        // Gallery add is best-effort
         console.warn('Could not add to gallery:', e);
       }
 
-      // Go to player with the sandbox file://
+      // Go to preview with the sandbox file://
       router.push({
-        pathname: '/video-player/[videoUrl]',
+        pathname: '/preview/[videoUrl]',
         params: { videoUrl: encodeURIComponent(appFileUri) },
       });
     } catch (err) {
@@ -130,7 +122,7 @@ export function useVideoDownload(videoUrl: string) {
   const playVideo = () => {
     if (localUri) {
       router.push({
-        pathname: '/video-player/[videoUrl]',
+        pathname: '/preview/[videoUrl]',
         params: { videoUrl: encodeURIComponent(localUri) },
       });
     }
