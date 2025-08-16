@@ -10,7 +10,6 @@ configureReanimatedLogger({ strict: false }); // turn off strict-mode warnings
 export default function RootLayout() {
   const { enableAnimations } = useSettingsStore();
 
-  
   useEffect(() => {
     if (!enableAnimations) {
       NativeModules.ChargingServiceModule?.stopService?.();
@@ -22,10 +21,10 @@ export default function RootLayout() {
       {/* Hide header for tab screens */}
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-      {/* Manual preview player (keep if you use it elsewhere) */}
+      {/* Preview screen */}
       <Stack.Screen name="preview/[videoUrl]" options={{ headerShown: false }} />
 
-      {/* See-more */}
+      {/* See more */}
       <Stack.Screen name="seemore/[category]" options={{ headerShown: false }} />
     </Stack>
   );
