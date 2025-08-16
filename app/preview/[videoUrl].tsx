@@ -1,8 +1,8 @@
 import ApplySettingsModal from '@/components/apply-settings-modal';
 import PreviewActions from '@/components/preview-actions';
-import { ResizeMode, Video } from 'expo-av';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import { useState } from 'react';
 import { NativeModules, View } from 'react-native';
 
 const { ChargingServiceModule } = NativeModules;
@@ -10,28 +10,26 @@ const { ChargingServiceModule } = NativeModules;
 export default function VideoPlayer() {
   const { videoUrl } = useLocalSearchParams<{ videoUrl: string }>();
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const playerRef = useRef<Video>(null);
 
   if (!videoUrl) return null;
   const uri = decodeURIComponent(videoUrl);
+
+  // Create a player that loops & starts immediately (same behavior as before)
+  const player = useVideoPlayer(uri, (p) => {
+    p.loop = true;
+    p.play();
+  });
 
   return (
     <View className="flex-1 bg-black">
       <PreviewActions onOpenModal={() => setShowSettingsModal(true)} />
 
-      <Video
-        key={uri}
-        ref={playerRef}
-        source={{ uri }}
+      {/* Video view (no native controls, contain behavior like ResizeMode.CONTAIN) */}
+      <VideoView
         style={{ width: '100%', height: '100%' }}
-        resizeMode={ResizeMode.CONTAIN}
-        shouldPlay={false}
-        isLooping
-        onReadyForDisplay={async () => {
-          try {
-            await playerRef.current?.playAsync();
-          } catch {}
-        }}
+        player={player}
+        nativeControls={false}
+        contentFit="contain"
       />
 
       <ApplySettingsModal
