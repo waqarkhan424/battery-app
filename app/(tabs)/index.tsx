@@ -61,7 +61,7 @@ export default function HomeScreen() {
               <Pressable
                 onPress={() =>
                   router.push({
-                    pathname: '/see-more/[category]',
+                    pathname: '/seemore/[category]',
                     params: { category },
                   })
                 }
@@ -72,49 +72,39 @@ export default function HomeScreen() {
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {videosByCategory[category]?.map((video) => (
-                <VideoItemCard
+                  <VideoItemCard
                   key={video.id}
                   video={{ url: video.url, thumbnail: video.thumbnail }}
                   /* same look your wrapper had */
                   styleClass="w-32 h-48 rounded-lg overflow-hidden bg-black mr-3 relative"
-                />
+                  />
               ))}
             </ScrollView>
           </View>
         ))}
       </ScrollView>
 
-      {/* Info Modal */}
-      <Modal visible={infoVisible} transparent animationType="fade" onRequestClose={() => setInfoVisible(false)}>
-        <View className="flex-1 bg-black/70 items-center justify-center px-6">
-          <View className="bg-slate-800 p-6 rounded-2xl w-full">
-            <Text className="text-white text-lg font-bold mb-2">About This App</Text>
-            <Text className="text-slate-300 mb-4">
-              This app provides charging animations organized by categories.
-            </Text>
-            <Pressable
-              onPress={() => setInfoVisible(false)}
-              className="mt-2 self-end px-4 py-2 bg-slate-700 rounded-xl"
-            >
-              <Text className="text-white">Close</Text>
+      {/* Tips modal (simple placeholder) */}
+      <Modal animationType="fade" transparent visible={tipsVisible} onRequestClose={() => setTipsVisible(false)}>
+        <View className="flex-1 bg-black/60 items-center justify-center p-6">
+          <View className="bg-slate-800 rounded-2xl p-6 w-full">
+            <Text className="text-white text-lg font-semibold mb-3">Tips</Text>
+            <Text className="text-slate-300 mb-4">Tap a thumbnail to download & preview the animation.</Text>
+            <Pressable onPress={() => setTipsVisible(false)} className="self-end bg-cyan-400 px-4 py-2 rounded-xl">
+              <Text className="text-white font-semibold">Close</Text>
             </Pressable>
           </View>
         </View>
       </Modal>
 
-      {/* Tips Modal */}
-      <Modal visible={tipsVisible} transparent animationType="fade" onRequestClose={() => setTipsVisible(false)}>
-        <View className="flex-1 bg-black/70 items-center justify-center px-6">
-          <View className="bg-slate-800 p-6 rounded-2xl w-full">
-            <Text className="text-white text-lg font-bold mb-2">Tips</Text>
-            <Text className="text-slate-300 mb-4">
-              Tap a card to download and preview. Once downloaded, tapping plays immediately.
-            </Text>
-            <Pressable
-              onPress={() => setTipsVisible(false)}
-              className="mt-2 self-end px-4 py-2 bg-slate-700 rounded-xl"
-            >
-              <Text className="text-white">Got it</Text>
+      {/* Info modal (simple placeholder) */}
+      <Modal animationType="fade" transparent visible={infoVisible} onRequestClose={() => setInfoVisible(false)}>
+        <View className="flex-1 bg-black/60 items-center justify-center p-6">
+          <View className="bg-slate-800 rounded-2xl p-6 w-full">
+            <Text className="text-white text-lg font-semibold mb-3">About</Text>
+            <Text className="text-slate-300 mb-4">Battery animations preview app.</Text>
+            <Pressable onPress={() => setInfoVisible(false)} className="self-end bg-cyan-400 px-4 py-2 rounded-xl">
+              <Text className="text-white font-semibold">Close</Text>
             </Pressable>
           </View>
         </View>
