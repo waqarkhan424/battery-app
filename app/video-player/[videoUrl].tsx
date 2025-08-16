@@ -12,7 +12,6 @@ const { ChargingServiceModule } = NativeModules;
 export default function VideoPlayer() {
   const { videoUrl } = useLocalSearchParams<{ videoUrl: string }>();
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showControls, setShowControls] = useState(true);
   const playerRef = useRef<Video>(null);
 
   if (!videoUrl) return null;
@@ -38,12 +37,7 @@ export default function VideoPlayer() {
         }}
       />
 
-      {showControls && (
-        <BottomControls
-          onOpenModal={() => setShowSettingsModal(true)}
-          onEyePress={() => setShowControls(false)}
-        />
-      )}
+      <BottomControls onOpenModal={() => setShowSettingsModal(true)} />
 
       <ApplySettingsModal
         visible={showSettingsModal}
