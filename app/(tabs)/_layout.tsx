@@ -1,7 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
-
 export default function Layout() {
   return (
     <Tabs
@@ -17,15 +16,6 @@ export default function Layout() {
           if (route.name === 'index') {
             return <Ionicons name="home" size={size} color={color} />;
           }
-          if (route.name === 'battery') {
-            return (
-              <MaterialCommunityIcons
-                name="battery"
-                size={size}
-                color={color}
-              />
-            ); // stand-up battery icon
-          }
           if (route.name === 'device') {
             return (
               <MaterialCommunityIcons
@@ -33,16 +23,16 @@ export default function Layout() {
                 size={size}
                 color={color}
               />
-            ); // better "device" icon
+            );
           }
           if (route.name === 'settings') {
             return <Ionicons name="settings" size={size} color={color} />;
           }
+          return null;
         },
       })}
     >
       <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="battery" options={{ title: 'Battery' }} />
       <Tabs.Screen name="device" options={{ title: 'Device' }} />
       <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
     </Tabs>
