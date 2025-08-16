@@ -1,4 +1,4 @@
-import VideoCard from '@/components/video-card';
+import VideoItemCard from '@/components/video-item-card';
 import { fetchVideosFromGitHub, VideoItem } from '@/lib/fetch-videos';
 import { useSettingsStore } from '@/store/settings';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,7 +19,7 @@ export default function HomeScreen() {
   const [videosByCategory, setVideosByCategory] = useState<Record<string, VideoItem[]>>({});
   const { enableAnimations } = useSettingsStore();
   const [infoVisible, setInfoVisible] = useState(false);
-  const [tipsVisible, setTipsVisible] = useState(false); // new state
+  const [tipsVisible, setTipsVisible] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -45,7 +45,6 @@ export default function HomeScreen() {
       {/* Header */}
       <View className="flex-row justify-between items-center px-4 py-8">
         <Pressable onPress={() => setTipsVisible(true)}>
-          {/* <Ionicons name="help-circle-outline" size={24} color="#facc15" /> */}
           <Ionicons name="sparkles-outline" size={24} color="#facc15" />
         </Pressable>
         <Pressable onPress={() => setInfoVisible(true)}>
@@ -70,12 +69,14 @@ export default function HomeScreen() {
                 <Text className="text-white text-lg font-medium">See More</Text>
               </Pressable>
             </View>
+
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {videosByCategory[category]?.map((video) => (
-                <VideoCard
+                <VideoItemCard
                   key={video.id}
-                  url={video.url}
-                  thumbnail={video.thumbnail}
+                  video={{ url: video.url, thumbnail: video.thumbnail }}
+                  /* same look your wrapper had */
+                  styleClass="w-32 h-48 rounded-lg overflow-hidden bg-black mr-3 relative"
                 />
               ))}
             </ScrollView>
@@ -84,33 +85,36 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Info Modal */}
-      <Modal visible={infoVisible} transparent animationType="fade">
+      <Modal visible={infoVisible} transparent animationType="fade" onRequestClose={() => setInfoVisible(false)}>
         <View className="flex-1 bg-black/70 items-center justify-center px-6">
           <View className="bg-slate-800 p-6 rounded-2xl w-full">
             <Text className="text-white text-lg font-bold mb-2">About This App</Text>
             <Text className="text-slate-300 mb-4">
-              This app provides cool charging animations categorized as Animal, Cartoon, and more. Tap any video to preview and enjoy while charging.
+              This app provides charging animations organized by categories.
             </Text>
-            <Pressable onPress={() => setInfoVisible(false)} className="self-end mt-2">
-              <Text className="text-cyan-400 font-bold text-base">Close</Text>
+            <Pressable
+              onPress={() => setInfoVisible(false)}
+              className="mt-2 self-end px-4 py-2 bg-slate-700 rounded-xl"
+            >
+              <Text className="text-white">Close</Text>
             </Pressable>
           </View>
         </View>
       </Modal>
 
       {/* Tips Modal */}
-      <Modal visible={tipsVisible} transparent animationType="fade">
+      <Modal visible={tipsVisible} transparent animationType="fade" onRequestClose={() => setTipsVisible(false)}>
         <View className="flex-1 bg-black/70 items-center justify-center px-6">
           <View className="bg-slate-800 p-6 rounded-2xl w-full">
-            <Text className="text-white text-lg font-bold mb-2">Tips to Use This App</Text>
-            <View className="space-y-2">
-              <Text className="text-slate-300">• Tap any animation to preview it.</Text>
-              <Text className="text-slate-300">• Use 'See More' to browse full categories.</Text>
-              <Text className="text-slate-300">• Animations auto-play once downloaded.</Text>
-              <Text className="text-slate-300">• Use Settings tab to customize behavior.</Text>
-            </View>
-            <Pressable onPress={() => setTipsVisible(false)} className="self-end mt-4">
-              <Text className="text-cyan-400 font-bold text-base">Got It</Text>
+            <Text className="text-white text-lg font-bold mb-2">Tips</Text>
+            <Text className="text-slate-300 mb-4">
+              Tap a card to download and preview. Once downloaded, tapping plays immediately.
+            </Text>
+            <Pressable
+              onPress={() => setTipsVisible(false)}
+              className="mt-2 self-end px-4 py-2 bg-slate-700 rounded-xl"
+            >
+              <Text className="text-white">Got it</Text>
             </Pressable>
           </View>
         </View>
