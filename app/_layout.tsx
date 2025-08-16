@@ -23,10 +23,10 @@ export default function RootLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
       {/* Manual preview player (keep if you use it elsewhere) */}
-      <Stack.Screen name="video-player/[videoUrl]" options={{ headerShown: false }} />
+      <Stack.Screen name="preview/[videoUrl]" options={{ headerShown: false }} />
 
       {/* See-more */}
-      <Stack.Screen name="see-more/[category]" options={{ headerShown: false }} />
+      <Stack.Screen name="seemore/[category]" options={{ headerShown: false }} />
     </Stack>
   );
 }
