@@ -1,7 +1,6 @@
 import ApplySettingsModal from '@/components/apply-settings-modal';
 import BottomControls from '@/components/bottom-controls';
 import CloseButton from '@/components/close-button';
-import VideoHeader from '@/components/video-header';
 import { ResizeMode, Video } from 'expo-av';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
@@ -20,7 +19,6 @@ export default function VideoPlayer() {
   return (
     <View className="flex-1 bg-black">
       <CloseButton />
-      <VideoHeader />
 
       <Video
         key={uri}
@@ -44,7 +42,7 @@ export default function VideoPlayer() {
         onClose={() => setShowSettingsModal(false)}
         onApply={() => {
           setShowSettingsModal(false);
-          // Pass the stable file:// path to the service
+          // Tell the native service to use this file:// video for plug-in events
           ChargingServiceModule.startService(uri);
           router.replace('/');
         }}
