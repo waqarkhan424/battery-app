@@ -11,7 +11,7 @@ export function useVideoDownload(videoUrl: string) {
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const fileName = videoUrl.split('/').pop() || `video-${Date.now()}.mp4`;
+const fileName = videoUrl.split('/').pop() || "default.mp4";
   console.log("fileName::::::", fileName)
   const tempFileUri = FileSystem.cacheDirectory! + fileName;
   console.log("tempFileUri::::::::", tempFileUri)
