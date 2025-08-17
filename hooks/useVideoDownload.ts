@@ -3,11 +3,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
-/**
- * We persist a copy under FileSystem.documentDirectory ("file://").
- * This avoids flaky content:// URIs after process death. We also add to the
- * gallery (best-effort) for user visibility.
- */
+
 export function useVideoDownload(videoUrl: string) {
   const [localUri, setLocalUri] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
