@@ -4,68 +4,75 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
 export function useVideoDownload(videoUrl: string) {
-  const [localUri, setLocalUri] = useState<string | null>(null);
+  const [localUri, setLocalUri] = useState<string | null>(null); // content://… when available
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  // keep the original filename from the URL (fallback safe)
   const fileName = videoUrl.split('/').pop() || 'default.mp4';
-  const tempFileUri = FileSystem.cacheDirectory! + fileName;
-  const appDir = FileSystem.documentDirectory! + 'BatteryAnimations/';
-  const appFileUri = appDir + fileName;
+  const tempFileUri = (FileSystem.cacheDirectory ?? '') + fileName;
 
-  const ensureAppDir = async () => {
-    const dirInfo = await FileSystem.getInfoAsync(appDir);
-    if (!dirInfo.exists) {
-      await FileSystem.makeDirectoryAsync(appDir, { intermediates: true });
-      console.log('📁 Created app directory');
-    }
+  // Build a playable URI safely: prefer AssetInfo.localUri, fallback to asset.uri (content://)
+  const pickPlayableUri = (asset: MediaLibrary.Asset | null, info?: MediaLibrary.AssetInfo | null) => {
+    return info?.localUri || asset?.uri || null;
   };
 
-  const checkIfVideoExists = useCallback(async () => {
+  // Find an exact filename match in the gallery (album first, then global)
+  const findAssetInGalleryExact = useCallback(async () => {
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    if (status !== 'granted') return null;
+
+    // 1) Try our album first (faster)
+    const album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
+    if (album) {
+      const inAlbum = await MediaLibrary.getAssetsAsync({
+        album,
+        mediaType: 'video',
+        first: 600,
+      });
+      const exact = inAlbum.assets.find(a => a.filename === fileName);
+      if (exact) return exact;
+    }
+
+    // 2) Fallback: search all videos
+    const all = await MediaLibrary.getAssetsAsync({
+      mediaType: 'video',
+      first: 1000,
+    });
+    return all.assets.find(a => a.filename === fileName) ?? null;
+  }, [fileName]);
+
+  // Refresh localUri from gallery (single source of truth)
+  const refreshFromGallery = useCallback(async () => {
     try {
-      const appInfo = await FileSystem.getInfoAsync(appFileUri);
-      if (appInfo.exists) {
-        console.log('✅ Found video in app storage');
-        setLocalUri(appFileUri);
+      const asset = await findAssetInGalleryExact();
+      if (!asset) {
+        setLocalUri(null); // not in gallery → must download
         return;
       }
-
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status === 'granted') {
-        const assets = await MediaLibrary.getAssetsAsync({
-          mediaType: 'video',
-          first: 200,
-        });
-
-        // 🔒 Exact filename match (no false positives from partial matches)
-        const matched = assets.assets.find((a) => a.filename === fileName);
-
-        if (matched) {
-          const info = await MediaLibrary.getAssetInfoAsync(matched);
-          if (info.localUri) {
-            await FileSystem.copyAsync({ from: info.localUri, to: appFileUri });
-            console.log('📀 Copied video from gallery to app storage');
-            setLocalUri(appFileUri);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('⚠️ Error checking video:', error);
+      let info: MediaLibrary.AssetInfo | null = null;
+      try { info = await MediaLibrary.getAssetInfoAsync(asset); } catch {}
+      const playable = pickPlayableUri(asset, info);
+      setLocalUri(playable);
+    } catch (e) {
+      setLocalUri(null);
     }
-  }, [fileName, appFileUri]);
+  }, [findAssetInGalleryExact]);
 
+  // On mount / URL change
   useEffect(() => {
-    checkIfVideoExists();
-  }, [checkIfVideoExists]);
+    refreshFromGallery();
+  }, [refreshFromGallery]);
 
+  // Also on screen focus (covers deletion while app is backgrounded)
   useFocusEffect(
     useCallback(() => {
-      checkIfVideoExists();
-    }, [checkIfVideoExists])
+      refreshFromGallery();
+    }, [refreshFromGallery])
   );
 
+  // Download → cache → create gallery asset → add to album → play from gallery
   const downloadAndSaveVideo = async () => {
-    console.log('⬇️ Download started:', fileName);
     setDownloading(true);
     setProgress(0);
 
@@ -74,7 +81,9 @@ export function useVideoDownload(videoUrl: string) {
       tempFileUri,
       {},
       ({ totalBytesWritten, totalBytesExpectedToWrite }) => {
-        const pct = Math.round((totalBytesWritten / totalBytesExpectedToWrite) * 100);
+        const pct = totalBytesExpectedToWrite > 0
+          ? Math.round((totalBytesWritten / totalBytesExpectedToWrite) * 100)
+          : 0;
         setProgress(pct);
       }
     );
@@ -82,33 +91,36 @@ export function useVideoDownload(videoUrl: string) {
     try {
       const result = await downloadResumable.downloadAsync();
       if (!result?.uri) throw new Error('Download failed');
-      const downloadedUri = result.uri;
+      const tmp = result.uri;
 
-      await ensureAppDir();
-      await FileSystem.copyAsync({ from: downloadedUri, to: appFileUri });
-      setLocalUri(appFileUri);
-      console.log('✅ Download complete & saved:', appFileUri);
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') throw new Error('MediaLibrary permission denied');
 
-      // Optional: Add to gallery
-      try {
-        const { status } = await MediaLibrary.requestPermissionsAsync();
-        if (status === 'granted') {
-          const asset = await MediaLibrary.createAssetAsync(downloadedUri);
-          let album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
-          if (!album) {
-            await MediaLibrary.createAlbumAsync('BatteryAnimations', asset, false);
-          } else {
-            await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-          }
-          console.log('📀 Added to gallery album');
-        }
-      } catch (e) {
-        console.warn('⚠️ Could not add to gallery:', e);
+      // Create an asset from the temp file
+      const asset = await MediaLibrary.createAssetAsync(tmp);
+
+      // Ensure album exists, then add the asset
+      let album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
+      if (!album) {
+        album = await MediaLibrary.createAlbumAsync('BatteryAnimations', asset, false);
+      } else {
+        await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
       }
 
+      // Clean up temp (gallery now owns the data)
+      try { await FileSystem.deleteAsync(tmp, { idempotent: true }); } catch {}
+
+      // Update playable URI from gallery
+      let info: MediaLibrary.AssetInfo | null = null;
+      try { info = await MediaLibrary.getAssetInfoAsync(asset); } catch {}
+      const playable = pickPlayableUri(asset, info);
+      console.log("playable::::::::::::", playable)
+      setLocalUri(playable);
+
+      // Navigate to preview with content://
       router.push({
         pathname: '/preview/[videoUrl]',
-        params: { videoUrl: encodeURIComponent(appFileUri) },
+        params: { videoUrl: encodeURIComponent(playable || '') },
       });
     } catch (err) {
       console.error('❌ Download failed:', err);
@@ -119,18 +131,18 @@ export function useVideoDownload(videoUrl: string) {
 
   const playVideo = () => {
     if (localUri) {
-      console.log('▶️ Playing video:', localUri);
+      console.log("localUri::::::::::", localUri)
       router.push({
         pathname: '/preview/[videoUrl]',
         params: { videoUrl: encodeURIComponent(localUri) },
       });
     } else {
-      console.log('ℹ️ No video found. Download required.');
+      console.log('ℹ️ Not in gallery. Download required.');
     }
   };
 
   return {
-    localUri,
+    localUri,           // null means "show Download" in your UI
     downloading,
     progress,
     downloadAndSaveVideo,
