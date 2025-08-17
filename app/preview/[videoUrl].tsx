@@ -26,6 +26,7 @@ export default function VideoPlayer() {
 
       {/* Video view (no native controls, contain behavior like ResizeMode.CONTAIN) */}
       <VideoView
+        key={uri} //  ensure fresh native instance when URI stays "the same"
         style={{ width: '100%', height: '100%' }}
         player={player}
         nativeControls={false}
@@ -37,7 +38,7 @@ export default function VideoPlayer() {
         onClose={() => setShowSettingsModal(false)}
         onApply={() => {
           setShowSettingsModal(false);
-          // Tell the native service to use this file:// video for plug-in events
+          // Tell the native service to use this video for plug-in events
           ChargingServiceModule.startService(uri);
           router.replace('/');
         }}
