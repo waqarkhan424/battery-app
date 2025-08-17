@@ -5,14 +5,20 @@ import { useCallback, useEffect, useState } from 'react';
 
 
 export function useVideoDownload(videoUrl: string) {
+    console.log("videoUrl::::::::", videoUrl)
+
   const [localUri, setLocalUri] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const fileName = videoUrl.split('/').pop() || `video-${Date.now()}.mp4`;
+  const fileName = videoUrl.split('/').pop();
+  console.log("fileName::::::", fileName)
   const tempFileUri = FileSystem.cacheDirectory! + fileName;
+  console.log("tempFileUri::::::::", tempFileUri)
 
   const appDir = FileSystem.documentDirectory! + 'BatteryAnimations/';
+    console.log("appDir::::::::", appDir)
+
   const appFileUri = appDir + fileName;
 
   const ensureAppDir = async () => {
@@ -24,7 +30,6 @@ export function useVideoDownload(videoUrl: string) {
 
   const checkIfVideoExists = useCallback(async () => {
     try {
-      // If it's already in our sandbox folder, use that
       const appInfo = await FileSystem.getInfoAsync(appFileUri);
       if (appInfo.exists) {
         setLocalUri(appFileUri);
