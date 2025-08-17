@@ -1,3 +1,4 @@
+// FILE: hooks/useVideoDownload.ts (Option A - gallery only, stable content://)
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import { router, useFocusEffect } from 'expo-router';
@@ -8,21 +9,18 @@ export function useVideoDownload(videoUrl: string) {
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // keep the original filename from the URL (fallback safe)
   const fileName = videoUrl.split('/').pop() || 'default.mp4';
   const tempFileUri = (FileSystem.cacheDirectory ?? '') + fileName;
 
-  // Build a playable URI safely: prefer AssetInfo.localUri, fallback to asset.uri (content://)
+  // Prefer content:// (asset.uri). Fall back to file:// if needed.
   const pickPlayableUri = (asset: MediaLibrary.Asset | null, info?: MediaLibrary.AssetInfo | null) => {
-    return info?.localUri || asset?.uri || null;
+    return asset?.uri || info?.localUri || null;
   };
 
-  // Find an exact filename match in the gallery (album first, then global)
   const findAssetInGalleryExact = useCallback(async () => {
     const { status } = await MediaLibrary.requestPermissionsAsync();
     if (status !== 'granted') return null;
 
-    // 1) Try our album first (faster)
     const album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
     if (album) {
       const inAlbum = await MediaLibrary.getAssetsAsync({
@@ -34,7 +32,6 @@ export function useVideoDownload(videoUrl: string) {
       if (exact) return exact;
     }
 
-    // 2) Fallback: search all videos
     const all = await MediaLibrary.getAssetsAsync({
       mediaType: 'video',
       first: 1000,
@@ -42,36 +39,25 @@ export function useVideoDownload(videoUrl: string) {
     return all.assets.find(a => a.filename === fileName) ?? null;
   }, [fileName]);
 
-  // Refresh localUri from gallery (single source of truth)
   const refreshFromGallery = useCallback(async () => {
     try {
       const asset = await findAssetInGalleryExact();
       if (!asset) {
-        setLocalUri(null); // not in gallery → must download
+        setLocalUri(null);
         return;
       }
       let info: MediaLibrary.AssetInfo | null = null;
       try { info = await MediaLibrary.getAssetInfoAsync(asset); } catch {}
       const playable = pickPlayableUri(asset, info);
       setLocalUri(playable);
-    } catch (e) {
+    } catch {
       setLocalUri(null);
     }
   }, [findAssetInGalleryExact]);
 
-  // On mount / URL change
-  useEffect(() => {
-    refreshFromGallery();
-  }, [refreshFromGallery]);
+  useEffect(() => { refreshFromGallery(); }, [refreshFromGallery]);
+  useFocusEffect(useCallback(() => { refreshFromGallery(); }, [refreshFromGallery]));
 
-  // Also on screen focus (covers deletion while app is backgrounded)
-  useFocusEffect(
-    useCallback(() => {
-      refreshFromGallery();
-    }, [refreshFromGallery])
-  );
-
-  // Download → cache → create gallery asset → add to album → play from gallery
   const downloadAndSaveVideo = async () => {
     setDownloading(true);
     setProgress(0);
@@ -96,10 +82,10 @@ export function useVideoDownload(videoUrl: string) {
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== 'granted') throw new Error('MediaLibrary permission denied');
 
-      // Create an asset from the temp file
-      const asset = await MediaLibrary.createAssetAsync(tmp);
+      // 1) Create asset (initially goes to DCIM or similar)
+      let asset = await MediaLibrary.createAssetAsync(tmp);
 
-      // Ensure album exists, then add the asset
+      // 2) Ensure album and add (this may MOVE the file)
       let album = await MediaLibrary.getAlbumAsync('BatteryAnimations');
       if (!album) {
         album = await MediaLibrary.createAlbumAsync('BatteryAnimations', asset, false);
@@ -107,17 +93,20 @@ export function useVideoDownload(videoUrl: string) {
         await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
       }
 
-      // Clean up temp (gallery now owns the data)
+      // 3) Re-find the asset by filename to get its final, post-move URI
+      const refreshed = await findAssetInGalleryExact();
+      if (refreshed) asset = refreshed;
+
+      // 4) Clean temp
       try { await FileSystem.deleteAsync(tmp, { idempotent: true }); } catch {}
 
-      // Update playable URI from gallery
+      // 5) Use stable content:// for playback
       let info: MediaLibrary.AssetInfo | null = null;
       try { info = await MediaLibrary.getAssetInfoAsync(asset); } catch {}
       const playable = pickPlayableUri(asset, info);
-      console.log("playable::::::::::::", playable)
+      console.log("playable:::::11111:::::", playable)
       setLocalUri(playable);
 
-      // Navigate to preview with content://
       router.push({
         pathname: '/preview/[videoUrl]',
         params: { videoUrl: encodeURIComponent(playable || '') },
@@ -131,7 +120,7 @@ export function useVideoDownload(videoUrl: string) {
 
   const playVideo = () => {
     if (localUri) {
-      console.log("localUri::::::::::", localUri)
+      console.log("localUri:::::222222:::", localUri)
       router.push({
         pathname: '/preview/[videoUrl]',
         params: { videoUrl: encodeURIComponent(localUri) },
@@ -141,11 +130,5 @@ export function useVideoDownload(videoUrl: string) {
     }
   };
 
-  return {
-    localUri,           // null means "show Download" in your UI
-    downloading,
-    progress,
-    downloadAndSaveVideo,
-    playVideo,
-  };
+  return { localUri, downloading, progress, downloadAndSaveVideo, playVideo };
 }
