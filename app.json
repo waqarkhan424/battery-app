@@ -4,12 +4,9 @@
     "slug": "battery-app",
     "version": "1.0.0",
     "orientation": "portrait",
-
     "scheme": "batteryapp",
-
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-
     "ios": {
       "supportsTablet": true
     },
@@ -31,9 +28,10 @@
     },
     "extra": {
       "router": {},
-    "eas": {
-      "projectId": "d3fd7c0d-6818-447f-bb38-5183d6f2aab0"
+      "eas": {
+        "projectId": "37c7f23e-a85f-4617-a1a9-d04a53be7300"
       }
-    }
+    },
+    "owner": "waqar-424"
   }
 }
