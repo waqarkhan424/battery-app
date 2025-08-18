@@ -8,7 +8,6 @@ export default function Layout() {
         headerShown: false,
         tabBarHideOnKeyboard: true,
 
-        //  No manual insets, no fixed height. Let React Navigation size the bar.
         tabBarStyle: {
           backgroundColor: '#0b1221',
           borderTopColor: '#131e33',
