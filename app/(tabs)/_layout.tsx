@@ -5,35 +5,36 @@ export default function Layout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
-        tabBarActiveTintColor: '#22d3ee', // Cyan-400
-        tabBarInactiveTintColor: '#94a3b8', // Slate-400
         headerShown: false,
+        tabBarActiveTintColor: '#22d3ee', // cyan-400
+        tabBarInactiveTintColor: '#94a3b8', // slate-400
+        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
         tabBarStyle: {
-          backgroundColor: '#0f172a', // Slate-900
-          borderTopColor: '#1e293b', // Slate-800
+          backgroundColor: '#0b1221', // darker than your background for contrast
+          borderTopColor: '#131e33',
+          height: 62,
+          paddingBottom: 8,
+          paddingTop: 8,
         },
         tabBarIcon: ({ color, size }) => {
           if (route.name === 'index') {
-            return <Ionicons name="home" size={size} color={color} />;
+            // Different icon from the prior “home” look
+            return <Ionicons name="grid-outline" size={size} color={color} />;
           }
           if (route.name === 'device') {
-            return (
-              <MaterialCommunityIcons
-                name="cellphone"
-                size={size}
-                color={color}
-              />
-            );
+            // Different visual language: chip icon (not a phone outline)
+            return <MaterialCommunityIcons name="chip" size={size} color={color} />;
           }
           if (route.name === 'settings') {
-            return <Ionicons name="settings" size={size} color={color} />;
+            // Different icon than before to avoid “stock” feel
+            return <Ionicons name="settings-outline" size={size} color={color} />;
           }
           return null;
         },
       })}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="device" options={{ title: 'Device' }} />
+      <Tabs.Screen name="index" options={{ title: 'Library' }} />
+      <Tabs.Screen name="device" options={{ title: 'Device Info' }} />
       <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
     </Tabs>
   );
