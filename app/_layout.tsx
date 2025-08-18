@@ -24,8 +24,6 @@ export default function RootLayout() {
       {/* Preview screen */}
       <Stack.Screen name="preview/[videoUrl]" options={{ headerShown: false }} />
 
-      {/* See more */}
-      <Stack.Screen name="seemore/[category]" options={{ headerShown: false }} />
     </Stack>
   );
 }
