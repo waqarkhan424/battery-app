@@ -32,10 +32,8 @@ export default function LibraryScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      {/* Header: title + category chips (icons & modals removed) */}
+      {/* Header: only category chips now (title removed) */}
       <View className="px-4 pt-6 pb-3">
-        <Text className="text-white text-2xl font-extrabold">Library</Text>
-
         <View className="flex-row flex-wrap mt-4">
           {CATEGORIES.map((cat) => {
             const active = cat === selected;
