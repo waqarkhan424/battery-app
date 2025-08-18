@@ -1,8 +1,13 @@
 import VideoItemCard from '@/components/video-item-card';
 import { fetchVideosFromGitHub, VideoItem } from '@/lib/fetch-videos';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 
 const CATEGORIES = ['animal', 'cartoon', 'circle'] as const;
 type Category = typeof CATEGORIES[number];
@@ -10,7 +15,6 @@ type Category = typeof CATEGORIES[number];
 export default function LibraryScreen() {
   const [videosByCategory, setVideosByCategory] = useState<Record<string, VideoItem[]>>({});
   const [selected, setSelected] = useState<Category>('animal');
-  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const load = async () => {
@@ -53,13 +57,7 @@ export default function LibraryScreen() {
       </View>
 
       {/* Two-column grid: shows ALL videos for the selected category */}
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 12,
-          // add safe bottom so content doesn't hide behind the tab bar
-          paddingBottom: 28 + insets.bottom,
-        }}
-      >
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 28 }}>
         <View className="flex-row flex-wrap justify-between">
           {gridData.map((video) => (
             <VideoItemCard
@@ -69,6 +67,7 @@ export default function LibraryScreen() {
             />
           ))}
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
