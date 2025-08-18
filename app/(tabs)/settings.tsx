@@ -14,12 +14,6 @@ export default function SettingsScreen() {
   const {
     enableAnimations,
     setEnableAnimations,
-    hideBatteryPercentage,
-    setHideBatteryPercentage,
-    keepServiceAlive,
-    setKeepServiceAlive,
-    overlayPermissionEnabled,
-    setOverlayPermissionEnabled,
   } = useSettingsStore();
 
   const ToggleRow = ({
@@ -70,45 +64,27 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView className="flex-1 px-4 pt-4" contentContainerStyle={{ paddingBottom: 20 }}>
+        {/* Kept: Enable Animations */}
         <ToggleRow
           label="Enable Animations"
           value={enableAnimations}
           onToggle={() => {
             const newValue = !enableAnimations;
             setEnableAnimations(newValue);
-            //  Only stop service when disabled
+            // Only stop service when disabling animations
             if (!newValue) {
               ChargingServiceModule.stopService();
             }
           }}
         />
 
-        <ToggleRow
-          label="Hide battery percentage"
-          value={hideBatteryPercentage}
-          onToggle={() => setHideBatteryPercentage(!hideBatteryPercentage)}
-        />
+        {/* Removed:
+            - Hide battery percentage
+            - Keep service always alive
+            - Overlay permission enabled
+        */}
 
-        <ToggleRow
-          label="Keep service always alive"
-          value={keepServiceAlive}
-          onToggle={() => {
-            const newValue = !keepServiceAlive;
-            setKeepServiceAlive(newValue);
-            //  Only stop service when disabled
-            if (!newValue) {
-              ChargingServiceModule.stopService();
-            }
-          }}
-        />
-
-        <ToggleRow
-          label="Overlay permission enabled"
-          value={overlayPermissionEnabled}
-          onToggle={() => setOverlayPermissionEnabled(!overlayPermissionEnabled)}
-        />
-
-        {/* Bottom actions */}
+        {/* Links */}
         <LinkRow
           icon={<Entypo name="share" size={22} color="#22d3ee" />}
           label="Share"
@@ -129,11 +105,8 @@ export default function SettingsScreen() {
           label="Terms & Conditions"
           onPress={() => Linking.openURL('https://www.example.com/terms')}
         />
-        <LinkRow
-          icon={<Feather name="headphones" size={22} color="#22d3ee" />}
-          label="Support"
-          onPress={() => console.log('Support Pressed')}
-        />
+
+        {/* Removed Support link (was a no-op). */}
       </ScrollView>
     </SafeAreaView>
   );
