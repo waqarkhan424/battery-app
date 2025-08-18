@@ -24,12 +24,10 @@ export default function VideoPlayer() {
     <View className="flex-1 bg-black">
       <PreviewActions onOpenModal={() => setShowSettingsModal(true)} />
 
-      {/* Video view (no native controls, contain behavior like ResizeMode.CONTAIN) */}
       <VideoView
-        key={uri} //  ensure fresh native instance when URI stays "the same"
+        key={uri} 
         style={{ width: '100%', height: '100%' }}
         player={player}
-        nativeControls={false}
         contentFit="contain"
       />
 
