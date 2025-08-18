@@ -1,7 +1,11 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Layout() {
+  const insets = useSafeAreaInsets();
+  const bottomPad = Math.max(insets.bottom, 8);
+
   return (
     <Tabs
       screenOptions={({ route }) => ({
@@ -10,23 +14,21 @@ export default function Layout() {
         tabBarInactiveTintColor: '#94a3b8', // slate-400
         tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
         tabBarStyle: {
-          backgroundColor: '#0b1221', // darker than your background for contrast
+          backgroundColor: '#0b1221',
           borderTopColor: '#131e33',
-          height: 62,
-          paddingBottom: 8,
+          // make space for the system nav/gesture area
+          height: 54 + bottomPad,
+          paddingBottom: bottomPad,
           paddingTop: 8,
         },
         tabBarIcon: ({ color, size }) => {
           if (route.name === 'index') {
-            // Different icon from the prior “home” look
             return <Ionicons name="grid-outline" size={size} color={color} />;
           }
           if (route.name === 'device') {
-            // Different visual language: chip icon (not a phone outline)
             return <MaterialCommunityIcons name="chip" size={size} color={color} />;
           }
           if (route.name === 'settings') {
-            // Different icon than before to avoid “stock” feel
             return <Ionicons name="settings-outline" size={size} color={color} />;
           }
           return null;
