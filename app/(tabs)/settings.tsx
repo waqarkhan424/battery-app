@@ -88,14 +88,14 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       {/* Header */}
-      <View className="px-4 py-4">
+      <View className="px-4 py-4 items-center">
         <Text className="text-white text-2xl font-bold">Settings</Text>
-        <Text className="text-secondary text-xs mt-1">
-          Manage preferences and legal info
-        </Text>
       </View>
 
-      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView
+        className="flex-1 px-4"
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
         {/* Main toggle */}
         <ToggleRow
           label="Enable Animations"
