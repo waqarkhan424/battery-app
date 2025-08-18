@@ -1,116 +1,145 @@
 import { useSettingsStore } from '@/store/settings';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
   onApply: () => void;
-  videoUrl: string; 
+  videoUrl: string;
 };
 
-export default function ApplySettingsModal({ visible, onClose, onApply, videoUrl }: Props) {
-  const [duration, setDuration] = useState('1 minute');
-  const [closeMethod, setCloseMethod] = useState('Single Tap To Hide');
+const DURATION_OPTIONS = ['10 seconds', '30 seconds', '1 minute', 'Always'] as const;
+const CLOSE_OPTIONS = ['Single Tap To Hide', 'Double Tap To Hide'] as const;
 
-  const [showDurationOptions, setShowDurationOptions] = useState(false);
-  const [showCloseOptions, setShowCloseOptions] = useState(false);
+export default function ApplySettingsModal({ visible, onClose, onApply, videoUrl }: Props) {
+  const [duration, setDuration] = useState<(typeof DURATION_OPTIONS)[number]>('1 minute');
+  const [closeMethod, setCloseMethod] = useState<(typeof CLOSE_OPTIONS)[number]>('Single Tap To Hide');
+  const insets = useSafeAreaInsets();
 
   const setAppliedAnimation = useSettingsStore((state) => state.setAppliedAnimation);
 
   if (!visible) return null;
 
   return (
-    <View className="absolute bottom-24 left-4 right-4 bg-slate-800 rounded-3xl p-6 z-30">
-      <Text className="text-white text-xl font-bold text-center mb-4">Apply Settings</Text>
+    <View className="absolute inset-0 z-50">
+      {/* Backdrop (tap to dismiss) */}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Close apply settings"
+        onPress={onClose}
+        className="absolute inset-0 bg-black/55"
+      />
 
-      <Text className="text-white mb-2">Please select animation time duration</Text>
+      {/* Glass card */}
+      <View
+        className="flex-1 items-center justify-end"
+        style={{ paddingBottom: Math.max(insets.bottom, 16) + 16 }} // safe-area + extra gap
+      >
+        <BlurView intensity={35} tint="dark" className="w-[92%] rounded-3xl overflow-hidden">
+          {/* Card header */}
+          <View className="bg-white/5 px-5 py-3 flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <View className="w-8 h-8 rounded-full bg-cyan-400/20 items-center justify-center mr-2">
+                <Ionicons name="options-outline" size={16} color="#22d3ee" />
+              </View>
+              <Text className="text-white text-base font-semibold">Apply Settings</Text>
+            </View>
 
-      {/* Duration Dropdown */}
-      <View className="bg-slate-700 rounded-lg mb-4">
-        <Pressable
-          onPress={() => setShowDurationOptions(!showDurationOptions)}
-          className="px-4 py-3 flex-row justify-between items-center"
-        >
-          <Text className="text-white">{duration}</Text>
-          <Ionicons
-            name={showDurationOptions ? 'chevron-up' : 'chevron-down'}
-            size={20}
-            color="white"
-          />
-        </Pressable>
-        {showDurationOptions && (
-          <View className="border-t border-slate-600 px-4 pb-2">
-            {['10 seconds', '30 seconds', '1 minute', 'Always']
-              .filter((option) => option !== duration)
-              .map((option) => (
-                <Pressable
-                  key={option}
-                  onPress={() => {
-                    setDuration(option);
-                    setShowDurationOptions(false);
-                  }}
-                >
-                  <Text className="text-slate-300 py-1">{option}</Text>
-                </Pressable>
-              ))}
+            <Pressable
+              onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+              className="w-8 h-8 rounded-full bg-white/10 items-center justify-center"
+            >
+              <Ionicons name="close" size={16} color="#ffffff" />
+            </Pressable>
           </View>
-        )}
-      </View>
 
-      <Text className="text-white mb-2">Closing Method</Text>
+          {/* Card body */}
+          <View className="bg-slate-900/60 px-5 pt-4 pb-3">
+            {/* Duration */}
+            <View className="mb-4">
+              <View className="flex-row items-center mb-2">
+                <Ionicons name="time-outline" size={16} color="#94a3b8" />
+                <Text className="text-slate-300 ml-2 text-sm">Animation duration</Text>
+              </View>
 
-      {/* Close Method Dropdown */}
-      <View className="bg-slate-700 rounded-lg mb-4">
-        <Pressable
-          onPress={() => setShowCloseOptions(!showCloseOptions)}
-          className="px-4 py-3 flex-row justify-between items-center"
-        >
-          <Text className="text-white">{closeMethod}</Text>
-          <Ionicons
-            name={showCloseOptions ? 'chevron-up' : 'chevron-down'}
-            size={20}
-            color="white"
-          />
-        </Pressable>
-        {showCloseOptions && (
-          <View className="border-t border-slate-600 px-4 pb-2">
-            {['Single Tap To Hide', 'Double Tap To Hide']
-              .filter((option) => option !== closeMethod)
-              .map((option) => (
-                <Pressable
-                  key={option}
-                  onPress={() => {
-                    setCloseMethod(option);
-                    setShowCloseOptions(false);
-                  }}
-                >
-                  <Text className="text-slate-300 py-1">{option}</Text>
-                </Pressable>
-              ))}
+              <View className="flex-row flex-wrap">
+                {DURATION_OPTIONS.map((opt) => {
+                  const selected = duration === opt;
+                  return (
+                    <Pressable
+                      key={opt}
+                      onPress={() => setDuration(opt)}
+                      className={`px-3 py-1.5 mr-2 mb-2 rounded-lg border ${
+                        selected ? 'bg-cyan-400/20 border-cyan-400' : 'bg-white/5 border-white/10'
+                      }`}
+                    >
+                      <Text className={`text-xs ${selected ? 'text-white' : 'text-slate-300'}`}>
+                        {opt}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* Closing method */}
+            <View className="mb-5">
+              <View className="flex-row items-center mb-2">
+                <Ionicons name="hand-left-outline" size={16} color="#94a3b8" />
+                <Text className="text-slate-300 ml-2 text-sm">Closing method</Text>
+              </View>
+
+              <View className="flex-row flex-wrap">
+                {CLOSE_OPTIONS.map((opt) => {
+                  const selected = closeMethod === opt;
+                  return (
+                    <Pressable
+                      key={opt}
+                      onPress={() => setCloseMethod(opt)}
+                      className={`px-3 py-1.5 mr-2 mb-2 rounded-lg border ${
+                        selected ? 'bg-cyan-400/20 border-cyan-400' : 'bg-white/5 border-white/10'
+                      }`}
+                    >
+                      <Text className={`text-xs ${selected ? 'text-white' : 'text-slate-300'}`}>
+                        {opt}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <Text className="text-slate-400 text-[11px] mt-1">
+                These options affect how long the animation stays visible and how to hide it quickly.
+              </Text>
+            </View>
+
+            {/* Actions (smaller buttons) */}
+            <View className="flex-row items-center justify-between">
+              <Pressable
+                onPress={onClose}
+                className="flex-1 mr-2 bg-white/5 border border-white/10 rounded-xl py-2 items-center"
+              >
+                <Text className="text-white font-semibold text-sm">Cancel</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => {
+                  setAppliedAnimation(videoUrl);
+                  onApply();
+                }}
+                className="flex-1 ml-2 bg-cyan-400 rounded-xl py-2 items-center"
+              >
+                <Text className="text-slate-900 font-extrabold text-sm">Apply</Text>
+              </Pressable>
+            </View>
           </View>
-        )}
-      </View>
-
-      {/* Buttons */}
-      <View className="flex-row justify-between">
-        <Pressable
-          onPress={onClose}
-          className="bg-slate-600 px-6 py-3 rounded-xl"
-        >
-          <Text className="text-white font-bold">No</Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => {
-            setAppliedAnimation(videoUrl); //  Save animation URI globally
-            onApply();                      // trigger additional logic
-          }}
-          className="bg-cyan-400 px-6 py-3 rounded-xl"
-        >
-          <Text className="text-white font-bold">Apply</Text>
-        </Pressable>
+        </BlurView>
       </View>
     </View>
   );
