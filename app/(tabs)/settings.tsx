@@ -1,4 +1,3 @@
-// FILE: app/(tabs)/settings.tsx
 import { useSettingsStore } from '@/store/settings';
 import {
   Entypo,
@@ -6,7 +5,6 @@ import {
   Ionicons,
   MaterialCommunityIcons,
 } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
 import React from 'react';
 import {
   Linking,
@@ -32,12 +30,12 @@ function ToggleRow({
   helper?: string;
 }) {
   return (
-    <View className="bg-surface/80 border border-white/10 rounded-2xl px-4 py-3.5 mb-4">
+    <View className="bg-surface rounded-xl px-4 py-4 mb-12 border border-slate-800">
       <View className="flex-row items-center justify-between">
         <View className="flex-1 pr-3">
-          <Text className="text-white text-base font-medium">{label}</Text>
+          <Text className="text-white text-lg font-semibold">{label}</Text>
           {!!helper && (
-            <Text className="text-slate-400 text-xs mt-1">{helper}</Text>
+            <Text className="text-secondary text-xs mt-1">{helper}</Text>
           )}
         </View>
         <Pressable
@@ -47,8 +45,8 @@ function ToggleRow({
           className="pl-3"
         >
           <MaterialCommunityIcons
-            name={value ? 'toggle-switch-outline' : 'toggle-switch-off-outline'}
-            size={36}
+            name={value ? 'toggle-switch' : 'toggle-switch-off-outline'}
+            size={40}
             color={value ? '#22d3ee' : '#94a3b8'}
           />
         </Pressable>
@@ -57,24 +55,29 @@ function ToggleRow({
   );
 }
 
-function ActionTile({
+function LinkRow({
   icon,
   label,
   onPress,
+  last,
 }: {
   icon: React.ReactNode;
   label: string;
   onPress: () => void;
+  last?: boolean;
 }) {
   return (
     <Pressable
       onPress={onPress}
-      className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-3 py-3 items-center"
+      className={`px-4 py-3 flex-row items-center justify-between ${
+        last ? '' : 'border-b border-slate-800'
+      }`}
     >
-      <View className="w-10 h-10 rounded-2xl bg-cyan-400/15 items-center justify-center">
+      <View className="flex-row items-center">
         {icon}
+        <Text className="text-white text-base ml-3">{label}</Text>
       </View>
-      <Text className="text-white text-sm mt-2">{label}</Text>
+      <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
     </Pressable>
   );
 }
@@ -84,32 +87,20 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      {/* Glassy header */}
-      <View className="px-4 pt-2 pb-3">
-        <BlurView intensity={30} tint="dark" className="rounded-2xl overflow-hidden">
-          <View className="px-4 py-3 flex-row items-center justify-between">
-            <View className="flex-row items-center">
-              <View className="w-9 h-9 rounded-xl bg-cyan-400/20 items-center justify-center mr-2">
-                <Ionicons name="settings-outline" size={18} color="#22d3ee" />
-              </View>
-              <View>
-                <Text className="text-white text-lg font-semibold">Settings</Text>
-                <Text className="text-secondary text-xs">Customize your experience</Text>
-              </View>
-            </View>
-          </View>
-        </BlurView>
+      {/* Header */}
+      <View className="px-4 py-4">
+        <Text className="text-white text-2xl font-bold">Settings</Text>
+        <Text className="text-secondary text-xs mt-1">
+          Manage preferences and legal info
+        </Text>
       </View>
 
-      <ScrollView
-        className="flex-1 px-4"
-        contentContainerStyle={{ paddingBottom: 24 }}
-      >
-        {/* Toggles */}
+      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 24 }}>
+        {/* Main toggle */}
         <ToggleRow
           label="Enable Animations"
           value={enableAnimations}
-          helper="When off, background service is stopped and charging animations won’t play."
+          helper="Turn off to stop the background service and disable charging animations."
           onToggle={() => {
             const next = !enableAnimations;
             setEnableAnimations(next);
@@ -117,56 +108,34 @@ export default function SettingsScreen() {
           }}
         />
 
-        {/* Quick actions */}
-        <View className="mt-1 mb-4">
-          <Text className="text-secondary text-xs mb-2">Quick actions</Text>
-          <View className="flex-row gap-3">
-            <ActionTile
-              icon={<Entypo name="share" size={18} color="#22d3ee" />}
-              label="Share"
-              onPress={() => console.log('Share Pressed')}
-            />
-            <ActionTile
-              icon={<Ionicons name="star-outline" size={18} color="#22d3ee" />}
-              label="Rate"
-              onPress={() => console.log('Rate Pressed')}
-            />
-            <ActionTile
-              icon={<Feather name="file-text" size={18} color="#22d3ee" />}
-              label="Privacy"
-              onPress={() => Linking.openURL('https://www.example.com/privacy')}
-            />
-          </View>
-        </View>
-
-        {/* Legal / links card */}
-        <View className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-          <Pressable
+        {/* Actions / links */}
+        <View className="bg-surface rounded-xl overflow-hidden border border-slate-800">
+          <LinkRow
+            icon={<Entypo name="share" size={18} color="#22d3ee" />}
+            label="Share"
+            onPress={() => console.log('Share Pressed')}
+          />
+          <LinkRow
+            icon={<Ionicons name="star-outline" size={18} color="#22d3ee" />}
+            label="Rate"
+            onPress={() => console.log('Rate Pressed')}
+          />
+          <LinkRow
+            icon={<Feather name="file-text" size={18} color="#22d3ee" />}
+            label="Privacy Policy"
+            onPress={() => Linking.openURL('https://www.example.com/privacy')}
+          />
+          <LinkRow
+            icon={<Feather name="file" size={18} color="#22d3ee" />}
+            label="Terms & Conditions"
             onPress={() => Linking.openURL('https://www.example.com/terms')}
-            className="px-4 py-3 flex-row items-center justify-between border-b border-white/10"
-          >
-            <View className="flex-row items-center">
-              <Feather name="file" size={18} color="#22d3ee" />
-              <Text className="text-white text-base ml-2">Terms & Conditions</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
-          </Pressable>
-
-          <View className="px-4 py-3">
-            <Text className="text-slate-400 text-[11px] leading-4">
-              Need help? Check the privacy and terms pages for details on data
-              use, licensing, and more.
-            </Text>
-          </View>
+            last
+          />
         </View>
 
-        {/* App badge */}
-        <View className="items-center mt-6 opacity-80">
-          <View className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-            <Text className="text-slate-300 text-xs">
-              battery-app • v1.0.0
-            </Text>
-          </View>
+        {/* Footer badge */}
+        <View className="items-center mt-6">
+          <Text className="text-secondary text-xs">battery-app • v1.0.0</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
