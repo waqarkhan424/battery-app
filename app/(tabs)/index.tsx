@@ -1,6 +1,5 @@
 import VideoItemCard from '@/components/video-item-card';
 import { fetchVideosFromGitHub, VideoItem } from '@/lib/fetch-videos';
-import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
@@ -28,11 +27,14 @@ export default function LibraryScreen() {
     load();
   }, []);
 
-  const gridData = useMemo(() => videosByCategory[selected] ?? [], [videosByCategory, selected]);
+  const gridData = useMemo(
+    () => videosByCategory[selected] ?? [],
+    [videosByCategory, selected]
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      {/* Header: only category chips now (title removed) */}
+      {/* Header: category chips only */}
       <View className="px-4 pt-6 pb-3">
         <View className="flex-row flex-wrap mt-4">
           {CATEGORIES.map((cat) => {
@@ -45,14 +47,16 @@ export default function LibraryScreen() {
                   active ? 'bg-cyan-400/20 border-cyan-400' : 'bg-white/5 border-white/10'
                 }`}
               >
-                <Text className={`capitalize ${active ? 'text-white' : 'text-slate-300'}`}>{cat}</Text>
+                <Text className={`capitalize ${active ? 'text-white' : 'text-slate-300'}`}>
+                  {cat}
+                </Text>
               </Pressable>
             );
           })}
         </View>
       </View>
 
-      {/* Two-column grid */}
+      {/* Two-column grid: shows ALL videos for the selected category */}
       <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 28 }}>
         <View className="flex-row flex-wrap justify-between">
           {gridData.map((video) => (
@@ -64,15 +68,6 @@ export default function LibraryScreen() {
           ))}
         </View>
 
-        {/* Category CTA */}
-        <Pressable
-          onPress={() =>
-            router.push({ pathname: '/seemore/[category]', params: { category: selected } })
-          }
-          className="mt-2 mx-1 bg-surface border border-slate-800 rounded-xl px-4 py-3 items-center"
-        >
-          <Text className="text-white font-semibold">Browse all “{selected}” animations</Text>
-        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
