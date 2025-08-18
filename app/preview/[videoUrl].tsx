@@ -2,7 +2,7 @@ import ApplySettingsModal from '@/components/apply-settings-modal';
 import PreviewActions from '@/components/preview-actions';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { NativeModules, View } from 'react-native';
 
 const { ChargingServiceModule } = NativeModules;
@@ -10,13 +10,16 @@ const { ChargingServiceModule } = NativeModules;
 export default function VideoPlayer() {
   const { videoUrl } = useLocalSearchParams<{ videoUrl: string }>();
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const viewRef = useRef<any>(null);
 
   if (!videoUrl) return null;
   const uri = decodeURIComponent(videoUrl);
 
-  // Create a player that loops & starts immediately (same behavior as before)
   const player = useVideoPlayer(uri, (p) => {
     p.loop = true;
+    // (optional) iOS background audio & Now Playing card
+    p.staysActiveInBackground = true;
+    p.showNowPlayingNotification = true;
     p.play();
   });
 
@@ -25,10 +28,14 @@ export default function VideoPlayer() {
       <PreviewActions onOpenModal={() => setShowSettingsModal(true)} />
 
       <VideoView
-        key={uri} 
+        ref={viewRef}
+        key={uri}
         style={{ width: '100%', height: '100%' }}
         player={player}
         contentFit="contain"
+        nativeControls={false}          
+        allowsFullscreen                 
+        allowsPictureInPicture           
       />
 
       <ApplySettingsModal
@@ -36,7 +43,6 @@ export default function VideoPlayer() {
         onClose={() => setShowSettingsModal(false)}
         onApply={() => {
           setShowSettingsModal(false);
-          // Tell the native service to use this video for plug-in events
           ChargingServiceModule.startService(uri);
           router.replace('/');
         }}

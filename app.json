@@ -21,7 +21,15 @@
     "plugins": [
       "expo-router",
       "expo-dev-client",
-      "expo-splash-screen"
+      "expo-splash-screen",
+
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": true,
+          "supportsPictureInPicture": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
