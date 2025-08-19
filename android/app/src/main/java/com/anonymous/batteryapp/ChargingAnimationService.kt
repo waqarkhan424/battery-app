@@ -124,7 +124,7 @@ class ChargingAnimationService : Service() {
 
         val piFlags =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
             else
                 PendingIntent.FLAG_UPDATE_CURRENT
 
@@ -142,6 +142,8 @@ class ChargingAnimationService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 1001
         private const val PREFS_NAME = "charging_prefs"
-        private const val KEY_APPLIED_URL = "appliedVideoUrl"
+        const val KEY_APPLIED_URL = "appliedVideoUrl"
+        const val KEY_DURATION_MS = "durationMs"
+        const val KEY_CLOSE_METHOD = "closeMethod"
     }
 }

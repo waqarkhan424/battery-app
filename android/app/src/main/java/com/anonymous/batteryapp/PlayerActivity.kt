@@ -11,7 +11,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
@@ -25,10 +27,12 @@ import java.util.Locale
 
 /**
  * Lightweight fullscreen player used only for plug-in events.
- * - Runs before RN/JS is warm
  * - Loops the saved MP4
  * - Shows over lockscreen and turns screen on
  * - Draws time + battery overlay on top of the video
+ * - Respects:
+ *   * durationMs (-1 = Always)
+ *   * closeMethod ("single" | "double")
  */
 class PlayerActivity : AppCompatActivity() {
 
@@ -38,9 +42,15 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var batteryIconText: TextView
 
     private val timeHandler = Handler(Looper.getMainLooper())
+    private val autoFinishHandler = Handler(Looper.getMainLooper())
+    private var durationMs: Int = -1
+    private var closeMethod: String = "single"
+    private var lastTapMs: Long = 0L
+    private val doubleTapWindow = 300L
+
     private val timeTick = object : Runnable {
         override fun run() {
-            updateTime()
+            updateTime();
             timeHandler.postDelayed(this, 1000)
         }
     }
@@ -73,8 +83,12 @@ class PlayerActivity : AppCompatActivity() {
             )
         }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
         super.onCreate(savedInstanceState)
+
+        // Read persisted options
+        val prefs = getSharedPreferences("charging_prefs", MODE_PRIVATE)
+        durationMs = prefs.getInt("durationMs", -1)
+        closeMethod = prefs.getString("closeMethod", "single") ?: "single"
 
         // Root
         val container = FrameLayout(this).apply {
@@ -83,6 +97,26 @@ class PlayerActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 Gravity.CENTER
             )
+            // Handle taps for closing
+            setOnTouchListener { _, event ->
+                if (event.action == MotionEvent.ACTION_UP) {
+                    if (closeMethod == "single") {
+                        finish()
+                        true
+                    } else {
+                        val now = SystemClock.elapsedRealtime()
+                        if (now - lastTapMs <= doubleTapWindow) {
+                            finish()
+                            true
+                        } else {
+                            lastTapMs = now
+                            true
+                        }
+                    }
+                } else {
+                    false
+                }
+            }
         }
 
         // Video (behind overlays)
@@ -154,6 +188,11 @@ class PlayerActivity : AppCompatActivity() {
         setContentView(container)
 
         playFromIntent(intent)
+
+        // Auto-dismiss timer (if configured)
+        if (durationMs > 0) {
+            autoFinishHandler.postDelayed({ try { finish() } catch (_: Throwable) {} }, durationMs.toLong())
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -206,6 +245,7 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         try { videoView.stopPlayback() } catch (_: Throwable) {}
+        autoFinishHandler.removeCallbacksAndMessages(null)
         super.onDestroy()
     }
 }

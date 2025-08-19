@@ -8,13 +8,26 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onApply: () => void;
+  // now passes durationMs and closeMethod to the parent
+  onApply: (durationMs: number, closeMethod: 'single' | 'double') => void;
   videoUrl: string;
 };
 
-
 const DURATION_OPTIONS = ['10 seconds', '30 seconds', '1 minute', 'Always'] as const;
 const CLOSE_OPTIONS = ['Single Tap To Hide', 'Double Tap To Hide'] as const;
+
+function toDurationMs(label: (typeof DURATION_OPTIONS)[number]) {
+  switch (label) {
+    case '10 seconds': return 10_000;
+    case '30 seconds': return 30_000;
+    case '1 minute': return 60_000;
+    case 'Always': return -1; // sentinel = do not auto-dismiss
+  }
+}
+
+function toCloseMethod(label: (typeof CLOSE_OPTIONS)[number]): 'single' | 'double' {
+  return label.startsWith('Single') ? 'single' : 'double';
+}
 
 export default function ApplySettingsModal({ visible, onClose, onApply, videoUrl }: Props) {
   const [duration, setDuration] = useState<(typeof DURATION_OPTIONS)[number]>('1 minute');
@@ -38,7 +51,7 @@ export default function ApplySettingsModal({ visible, onClose, onApply, videoUrl
       {/* Glass card */}
       <View
         className="flex-1 items-center justify-end"
-        style={{ paddingBottom: Math.max(insets.bottom, 16) + 16 }} // safe-area + extra gap
+        style={{ paddingBottom: Math.max(insets.bottom, 16) + 16 }}
       >
         <BlurView intensity={35} tint="dark" className="w-[92%] rounded-3xl overflow-hidden">
           {/* Card header */}
@@ -120,7 +133,7 @@ export default function ApplySettingsModal({ visible, onClose, onApply, videoUrl
               </Text>
             </View>
 
-            {/* Actions (smaller buttons) */}
+            {/* Actions */}
             <View className="flex-row items-center justify-between">
               <Pressable
                 onPress={onClose}
@@ -132,7 +145,9 @@ export default function ApplySettingsModal({ visible, onClose, onApply, videoUrl
               <Pressable
                 onPress={() => {
                   setAppliedAnimation(videoUrl);
-                  onApply();
+                  const durationMs = toDurationMs(duration);
+                  const method = toCloseMethod(closeMethod);
+                  onApply(durationMs, method);
                 }}
                 className="flex-1 ml-2 bg-cyan-400 rounded-xl py-2 items-center"
               >

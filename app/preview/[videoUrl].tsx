@@ -5,7 +5,11 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { useState } from 'react';
 import { NativeModules, View } from 'react-native';
 
-const { ChargingServiceModule } = NativeModules;
+const { ChargingServiceModule } = NativeModules as {
+  ChargingServiceModule: {
+    startServiceWithOptions: (videoUrl: string, durationMs: number, closeMethod: 'single' | 'double') => void;
+  };
+};
 
 export default function VideoPlayer() {
   const { videoUrl } = useLocalSearchParams<{ videoUrl: string }>();
@@ -17,7 +21,7 @@ export default function VideoPlayer() {
   // Player setup
   const player = useVideoPlayer(uri, (p) => {
     p.loop = true;
-    p.staysActiveInBackground = true; //  keeps player stable across screen changes
+    p.staysActiveInBackground = true;
     p.play();
   });
 
@@ -36,9 +40,10 @@ export default function VideoPlayer() {
       <ApplySettingsModal
         visible={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
-        onApply={() => {
+        onApply={(durationMs, closeMethod) => {
           setShowSettingsModal(false);
-          ChargingServiceModule.startService(uri);
+          // persist options + start service
+          ChargingServiceModule.startServiceWithOptions(uri, durationMs, closeMethod);
           router.replace('/');
         }}
         videoUrl={uri}
