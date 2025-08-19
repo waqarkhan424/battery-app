@@ -3,6 +3,7 @@ package com.anonymous.batteryapp
 import android.content.BroadcastReceiver
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
@@ -21,11 +22,13 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
+import androidx.core.widget.ImageViewCompat
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
@@ -37,7 +40,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var videoView: VideoView
     private lateinit var timeText: TextView
     private lateinit var batteryPctText: TextView
-    private lateinit var batteryIconText: TextView
+    private lateinit var batteryIconView: ImageView
     private lateinit var container: FrameLayout
 
     private val timeHandler = Handler(Looper.getMainLooper())
@@ -64,7 +67,18 @@ class PlayerActivity : AppCompatActivity() {
             val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
                     status == BatteryManager.BATTERY_STATUS_FULL
 
-            batteryIconText.text = if (isCharging) "⚡" else "🔋"
+            // Swap icon based on charging state (vector drawables)
+            batteryIconView.setImageResource(
+                if (isCharging) R.drawable.ic_battery_charging_full
+                else R.drawable.ic_battery_full
+            )
+
+            // Make sure icon is clearly visible on black
+            ImageViewCompat.setImageTintList(
+                batteryIconView,
+                ColorStateList.valueOf(Color.WHITE)
+            )
+
             batteryPctText.text = if (pct >= 0) "$pct%" else ""
         }
     }
@@ -138,27 +152,29 @@ class PlayerActivity : AppCompatActivity() {
             cornerRadius = dp(999).toFloat()
             setColor(Color.parseColor("#1F1F1F"))
         }
-        batteryIconText = TextView(this).apply {
+
+        // NEW: ImageView for the icon (replaces emoji TextView)
+        batteryIconView = ImageView(this).apply {
             layoutParams = LinearLayout.LayoutParams(dp(56), dp(56))
             background = circleBg
-            gravity = Gravity.CENTER
-            textSize = 24f
-            setTextColor(Color.WHITE)
+            scaleType = ImageView.ScaleType.CENTER_INSIDE
+            // Initial icon + tint; will be updated by receiver
+            setImageResource(R.drawable.ic_battery_full)
+            ImageViewCompat.setImageTintList(this, ColorStateList.valueOf(Color.WHITE))
         }
+
         batteryPctText = TextView(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                // spacing between the circle icon and the percentage text
-                leftMargin = dp(12)
-            }
+            ).apply { leftMargin = dp(12) }
             gravity = Gravity.CENTER
             textSize = 18f
             setTextColor(Color.WHITE)
             setShadowLayer(6f, 0f, 0f, Color.parseColor("#80000000"))
         }
-        bottomCluster.addView(batteryIconText)
+
+        bottomCluster.addView(batteryIconView)
         bottomCluster.addView(batteryPctText)
         container.addView(bottomCluster)
 
