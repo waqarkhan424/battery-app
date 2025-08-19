@@ -12,18 +12,25 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 /**
  * Lightweight fullscreen player used only for plug-in events.
@@ -33,6 +40,7 @@ import java.util.Locale
  * - Respects:
  *   * durationMs (-1 = Always)
  *   * closeMethod ("single" | "double")
+ * - Forces immersive full-screen and center-crops video to cover the entire display.
  */
 class PlayerActivity : AppCompatActivity() {
 
@@ -40,6 +48,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var timeText: TextView
     private lateinit var batteryPctText: TextView
     private lateinit var batteryIconText: TextView
+    private lateinit var container: FrameLayout
 
     private val timeHandler = Handler(Looper.getMainLooper())
     private val autoFinishHandler = Handler(Looper.getMainLooper())
@@ -50,7 +59,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private val timeTick = object : Runnable {
         override fun run() {
-            updateTime();
+            updateTime()
             timeHandler.postDelayed(this, 1000)
         }
     }
@@ -63,7 +72,7 @@ class PlayerActivity : AppCompatActivity() {
             val pct = if (level >= 0) (level * 100 / scale) else -1
 
             val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
-                             status == BatteryManager.BATTERY_STATUS_FULL
+                    status == BatteryManager.BATTERY_STATUS_FULL
 
             batteryIconText.text = if (isCharging) "⚡" else "🔋"
             batteryPctText.text = if (pct >= 0) "$pct%" else ""
@@ -71,6 +80,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Show on lock screen & turn screen on
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
@@ -78,20 +88,25 @@ class PlayerActivity : AppCompatActivity() {
             @Suppress("DEPRECATION")
             window.addFlags(
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                        WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
             )
         }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         super.onCreate(savedInstanceState)
+
+        // Edge-to-edge content; we'll hide system bars manually via immersive mode
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        enterImmersiveMode()
 
         // Read persisted options
         val prefs = getSharedPreferences("charging_prefs", MODE_PRIVATE)
         durationMs = prefs.getInt("durationMs", -1)
         closeMethod = prefs.getString("closeMethod", "single") ?: "single"
 
-        // Root
-        val container = FrameLayout(this).apply {
+        // Root (black background to avoid any gaps)
+        container = FrameLayout(this).apply {
+            setBackgroundColor(Color.BLACK)
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -119,7 +134,7 @@ class PlayerActivity : AppCompatActivity() {
             }
         }
 
-        // Video (behind overlays)
+        // Video (behind overlays) — will be center-cropped in onPrepared
         videoView = VideoView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -202,11 +217,17 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        enterImmersiveMode() // re-assert on resume
         timeHandler.post(timeTick)
 
         val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         val sticky = registerReceiver(batteryReceiver, filter)
         if (sticky != null) batteryReceiver.onReceive(this, sticky)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) enterImmersiveMode() // re-assert after focus changes
     }
 
     override fun onPause() {
@@ -228,12 +249,67 @@ class PlayerActivity : AppCompatActivity() {
         videoView.setVideoURI(Uri.parse(url))
         videoView.setOnPreparedListener { mp ->
             mp.isLooping = true
+
+            // When video size is known, center-crop to screen
+            val vw = mp.videoWidth
+            val vh = mp.videoHeight
+            if (vw > 0 && vh > 0) {
+                centerCropToScreen(vw, vh)
+            }
+
+            // Also recalc if decoder reports a size change mid-playback
+            mp.setOnVideoSizeChangedListener { _, width, height ->
+                if (width > 0 && height > 0) {
+                    centerCropToScreen(width, height)
+                }
+            }
+
             videoView.start()
         }
         videoView.setOnErrorListener { _, _, _ ->
             finish()
             true
         }
+    }
+
+    /** Hide system bars in a sticky way so the animation fully covers the display. */
+    private fun enterImmersiveMode() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val controller = window.insetsController ?: return
+            controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+            controller.systemBarsBehavior =
+                WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        } else {
+            @Suppress("DEPRECATION")
+            container.systemUiVisibility =
+                (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
+        }
+    }
+
+    /**
+     * Resize the VideoView so the video covers the entire screen (center-crop).
+     * Keeps aspect ratio; one dimension may extend beyond the screen to avoid letterboxing.
+     */
+    private fun centerCropToScreen(videoWidth: Int, videoHeight: Int) {
+        val dm: DisplayMetrics = resources.displayMetrics
+        val screenW = dm.widthPixels.toFloat()
+        val screenH = dm.heightPixels.toFloat()
+
+        val scale = max(screenW / videoWidth, screenH / videoHeight)
+        val targetW = (videoWidth * scale).roundToInt()
+        val targetH = (videoHeight * scale).roundToInt()
+
+        val lp = videoView.layoutParams as FrameLayout.LayoutParams
+        lp.width = targetW
+        lp.height = targetH
+        lp.gravity = Gravity.CENTER
+        videoView.layoutParams = lp
+        videoView.requestLayout()
     }
 
     private fun updateTime() {
