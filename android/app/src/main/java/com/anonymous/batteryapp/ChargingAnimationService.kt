@@ -21,19 +21,51 @@ import androidx.core.app.NotificationCompat
 class ChargingAnimationService : Service() {
 
     private var appliedVideoUrl: String? = null
+
+    // existing cooldown (kept)
     private var lastLaunchMs: Long = 0L
     private val launchCooldownMs = 2500L
+
+    // NEW: one-launch-per-plug session latch
+    private var playedThisCharge = false
+    private var wasCharging = false
 
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
             val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
             val isChargingNow =
-                (action == Intent.ACTION_POWER_CONNECTED) ||
                 status == BatteryManager.BATTERY_STATUS_CHARGING ||
                 status == BatteryManager.BATTERY_STATUS_FULL
 
-            if (!isChargingNow || appliedVideoUrl.isNullOrBlank()) return
+            when (action) {
+                Intent.ACTION_POWER_DISCONNECTED -> {
+                    // Cable removed: next plug-in may play again
+                    wasCharging = false
+                    playedThisCharge = false
+                    return
+                }
+
+                Intent.ACTION_BATTERY_CHANGED -> {
+                    // Update state only; do NOT launch from generic battery ticks
+                    wasCharging = isChargingNow
+                    return
+                }
+
+                Intent.ACTION_POWER_CONNECTED -> {
+                    // explicit new plug-in event
+                    wasCharging = true
+                }
+
+                else -> {
+                    // Ignore other actions
+                    return
+                }
+            }
+
+            // From here, we are handling ACTION_POWER_CONNECTED only.
+            if (appliedVideoUrl.isNullOrBlank()) return
+            if (playedThisCharge) return
 
             val now = SystemClock.elapsedRealtime()
             if (now - lastLaunchMs < launchCooldownMs) return
@@ -51,11 +83,14 @@ class ChargingAnimationService : Service() {
             val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
             @Suppress("WakelockTimeout")
             val wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "batteryapp:chargeWake")
+
             try { wl.acquire(5_000) } catch (_: Throwable) {}
 
             Handler(Looper.getMainLooper()).postDelayed({
                 try {
                     context.startActivity(launch)
+                    // mark as shown for this plug-in session
+                    playedThisCharge = true
                 } finally {
                     try { if (wl.isHeld) wl.release() } catch (_: Throwable) {}
                 }
