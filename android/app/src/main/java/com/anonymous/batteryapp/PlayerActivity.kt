@@ -88,7 +88,7 @@ class PlayerActivity : AppCompatActivity() {
         // Edge-to-edge content
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        // --- build UI first ---
+        // --- Root container ---
         container = FrameLayout(this).apply {
             setBackgroundColor(Color.BLACK)
             layoutParams = FrameLayout.LayoutParams(
@@ -96,22 +96,9 @@ class PlayerActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 Gravity.CENTER
             )
-            setOnTouchListener { _, event ->
-                if (event.action == MotionEvent.ACTION_UP) {
-                    if (closeMethod == "single") {
-                        finish(); true
-                    } else {
-                        val now = SystemClock.elapsedRealtime()
-                        if (now - lastTapMs <= doubleTapWindow) {
-                            finish(); true
-                        } else {
-                            lastTapMs = now; true
-                        }
-                    }
-                } else false
-            }
         }
 
+        // Video layer (fills screen)
         videoView = VideoView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -171,12 +158,50 @@ class PlayerActivity : AppCompatActivity() {
         bottomCluster.addView(batteryPctText)
         container.addView(bottomCluster)
 
+        // >>> Touch catcher overlay (fixes tap-to-hide not firing) <<<
+        val touchCatcher = View(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            // Ensure this view can receive touches and sits on top
+            isClickable = true
+            isFocusable = true
+
+            setOnTouchListener { _, event ->
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        // Claim the gesture so we will receive ACTION_UP
+                        true
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        if (closeMethod == "single") {
+                            finish()
+                            true
+                        } else {
+                            val now = SystemClock.elapsedRealtime()
+                            if (now - lastTapMs <= doubleTapWindow) {
+                                finish()
+                                lastTapMs = 0L
+                                true
+                            } else {
+                                lastTapMs = now
+                                true
+                            }
+                        }
+                    }
+                    else -> true
+                }
+            }
+        }
+        container.addView(touchCatcher)
+
         setContentView(container)
 
-        // Now it’s safe to hide system bars
+        // Hide system bars
         enterImmersiveMode()
 
-        // Read persisted options AFTER building view (closeMethod affects tap handler semantics)
+        // Read persisted options AFTER building view (affects tap semantics)
         val prefs = getSharedPreferences("charging_prefs", MODE_PRIVATE)
         durationMs = prefs.getInt("durationMs", -1)
         closeMethod = prefs.getString("closeMethod", "single") ?: "single"
@@ -184,7 +209,10 @@ class PlayerActivity : AppCompatActivity() {
         playFromIntent(intent)
 
         if (durationMs > 0) {
-            autoFinishHandler.postDelayed({ try { finish() } catch (_: Throwable) {} }, durationMs.toLong())
+            autoFinishHandler.postDelayed(
+                { try { finish() } catch (_: Throwable) {} },
+                durationMs.toLong()
+            )
         }
     }
 
@@ -261,31 +289,33 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun centerCropToScreen(videoWidth: Int, videoHeight: Int) {
         val dm: DisplayMetrics = resources.displayMetrics
-        val screenW = dm.widthPixels.toFloat()
-        val screenH = dm.heightPixels.toFloat()
+        val sw = dm.widthPixels.toFloat()
+        val sh = dm.heightPixels.toFloat()
 
-        val scale = max(screenW / videoWidth, screenH / videoHeight)
-        val targetW = (videoWidth * scale).roundToInt()
-        val targetH = (videoHeight * scale).roundToInt()
+        val vr = videoWidth.toFloat() / videoHeight.toFloat()
+        val sr = sw / sh
 
         val lp = videoView.layoutParams as FrameLayout.LayoutParams
-        lp.width = targetW
-        lp.height = targetH
-        lp.gravity = Gravity.CENTER
+        if (vr > sr) {
+            // video is wider → match height and crop left/right
+            lp.height = ViewGroup.LayoutParams.MATCH_PARENT
+            val w = (sh * vr).roundToInt()
+            lp.width = max(w, dm.widthPixels)
+        } else {
+            // video is taller → match width and crop top/bottom
+            lp.width = ViewGroup.LayoutParams.MATCH_PARENT
+            val h = (sw / vr).roundToInt()
+            lp.height = max(h, dm.heightPixels)
+        }
         videoView.layoutParams = lp
-        videoView.requestLayout()
     }
 
     private fun updateTime() {
-        val fmt = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault())
-        timeText.text = fmt.format(Date())
+        val now = Date()
+        val time = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault()).format(now)
+        timeText.text = time
     }
 
-    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
-
-    override fun onDestroy() {
-        try { videoView.stopPlayback() } catch (_: Throwable) {}
-        autoFinishHandler.removeCallbacksAndMessages(null)
-        super.onDestroy()
-    }
+    private fun dp(px: Int): Int =
+        (resources.displayMetrics.density * px).roundToInt()
 }
