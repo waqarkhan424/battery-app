@@ -12,9 +12,6 @@ export default function Layout() {
         tabBarStyle: {
           backgroundColor: '#0b1221', // darker than your background for contrast
           borderTopColor: '#131e33',
-          height: 62,
-          paddingBottom: 8,
-          paddingTop: 8,
         },
         tabBarIcon: ({ color, size }) => {
           if (route.name === 'index') {
