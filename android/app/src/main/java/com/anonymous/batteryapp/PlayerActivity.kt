@@ -122,15 +122,16 @@ class PlayerActivity : AppCompatActivity() {
         }
         container.addView(timeText)
 
-        // Battery cluster (bottom)
+        // Battery cluster (bottom) — HORIZONTAL row now
         val bottomCluster = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
+            orientation = LinearLayout.HORIZONTAL
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
             ).apply { bottomMargin = dp(24) }
-            gravity = Gravity.CENTER_HORIZONTAL
+            // Center items vertically & horizontally in the row
+            gravity = Gravity.CENTER
         }
         val circleBg = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
@@ -148,7 +149,10 @@ class PlayerActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = dp(10) }
+            ).apply {
+                // spacing between the circle icon and the percentage text
+                leftMargin = dp(12)
+            }
             gravity = Gravity.CENTER
             textSize = 18f
             setTextColor(Color.WHITE)
