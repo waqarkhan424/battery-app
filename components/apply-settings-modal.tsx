@@ -12,6 +12,7 @@ type Props = {
   videoUrl: string;
 };
 
+
 const DURATION_OPTIONS = ['10 seconds', '30 seconds', '1 minute', 'Always'] as const;
 const CLOSE_OPTIONS = ['Single Tap To Hide', 'Double Tap To Hide'] as const;
 
