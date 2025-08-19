@@ -16,7 +16,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const { ChargingServiceModule } = NativeModules;
+const { ChargingServiceModule } = NativeModules as {
+  ChargingServiceModule: {
+    stopService: () => void;
+    startServiceIfConfigured: () => void;
+  };
+};
 
 function ToggleRow({
   label,
@@ -104,7 +109,12 @@ export default function SettingsScreen() {
           onToggle={() => {
             const next = !enableAnimations;
             setEnableAnimations(next);
-            if (!next) ChargingServiceModule.stopService();
+            if (!next) {
+              ChargingServiceModule.stopService();
+            } else {
+              // re-start with the last applied animation (if any)
+              ChargingServiceModule.startServiceIfConfigured();
+            }
           }}
         />
 

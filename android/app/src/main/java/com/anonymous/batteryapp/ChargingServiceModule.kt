@@ -48,6 +48,35 @@ class ChargingServiceModule(private val reactContext: ReactApplicationContext) :
         reactContext.stopService(intent)
     }
 
+    /** Start the service again using whatever was saved last time (if any). */
+    @ReactMethod
+    fun startServiceIfConfigured() {
+        val p = prefs()
+        val url = p.getString(KEY_APPLIED_URL, null)
+        // (Optional) read persisted options so PlayerActivity can pick them up
+        val durationMs = p.getInt(KEY_DURATION_MS, -1)
+        val closeMethod = p.getString(KEY_CLOSE_METHOD, "single") ?: "single"
+
+        if (!url.isNullOrBlank()) {
+            // Ensure prefs are populated (in case only URL existed)
+            p.edit()
+                .putString(KEY_APPLIED_URL, url)
+                .putInt(KEY_DURATION_MS, durationMs)
+                .putString(KEY_CLOSE_METHOD, closeMethod)
+                .apply()
+
+            val intent = Intent(reactContext, ChargingAnimationService::class.java).apply {
+                putExtra("videoUrl", url)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                reactContext.startForegroundService(intent)
+            } else {
+                reactContext.startService(intent)
+            }
+        }
+        // If no URL saved, do nothing (user hasn’t applied yet).
+    }
+
     companion object {
         private const val PREFS_NAME = "charging_prefs"
         const val KEY_APPLIED_URL = "appliedVideoUrl"

@@ -7,12 +7,22 @@ import './global.css';
 
 configureReanimatedLogger({ strict: false }); // turn off strict-mode warnings
 
+const { ChargingServiceModule } = NativeModules as {
+  ChargingServiceModule?: {
+    stopService?: () => void;
+    startServiceIfConfigured?: () => void;
+  };
+};
+
 export default function RootLayout() {
   const { enableAnimations } = useSettingsStore();
 
   useEffect(() => {
     if (!enableAnimations) {
-      NativeModules.ChargingServiceModule?.stopService?.();
+      ChargingServiceModule?.stopService?.();
+    } else {
+      // make sure the service comes back with the last applied video
+      ChargingServiceModule?.startServiceIfConfigured?.();
     }
   }, [enableAnimations]);
 
@@ -23,7 +33,6 @@ export default function RootLayout() {
 
       {/* Preview screen */}
       <Stack.Screen name="preview/[videoUrl]" options={{ headerShown: false }} />
-
     </Stack>
   );
 }
