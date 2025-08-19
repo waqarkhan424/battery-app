@@ -122,13 +122,25 @@ class PlayerActivity : AppCompatActivity() {
         }
         container.addView(videoView)
 
+        // Compute a safe top inset (status bar / notch) so the time never touches the top
+        val safeTopInset = run {
+            var top = 0
+            if (Build.VERSION.SDK_INT >= 28) {
+                val cut = window.decorView.rootWindowInsets?.displayCutout
+                top = max(top, cut?.safeInsetTop ?: 0)
+            }
+            val resId = resources.getIdentifier("status_bar_height", "dimen", "android")
+            if (resId > 0) top = max(top, resources.getDimensionPixelSize(resId))
+            top
+        }
+
         // Time (top)
         timeText = TextView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.TOP or Gravity.CENTER_HORIZONTAL
-            ).apply { topMargin = dp(18) }
+            ).apply { topMargin = safeTopInset + dp(18) }
             textSize = 22f
             setTextColor(Color.WHITE)
             gravity = Gravity.CENTER
