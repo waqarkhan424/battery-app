@@ -32,16 +32,6 @@ import java.util.Locale
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-/**
- * Lightweight fullscreen player used only for plug-in events.
- * - Loops the saved MP4
- * - Shows over lockscreen and turns screen on
- * - Draws time + battery overlay on top of the video
- * - Respects:
- *   * durationMs (-1 = Always)
- *   * closeMethod ("single" | "double")
- * - Forces immersive full-screen and center-crops video to cover the entire display.
- */
 class PlayerActivity : AppCompatActivity() {
 
     private lateinit var videoView: VideoView
@@ -95,16 +85,10 @@ class PlayerActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         super.onCreate(savedInstanceState)
 
-        // Edge-to-edge content; we'll hide system bars manually via immersive mode
+        // Edge-to-edge content
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        enterImmersiveMode()
 
-        // Read persisted options
-        val prefs = getSharedPreferences("charging_prefs", MODE_PRIVATE)
-        durationMs = prefs.getInt("durationMs", -1)
-        closeMethod = prefs.getString("closeMethod", "single") ?: "single"
-
-        // Root (black background to avoid any gaps)
+        // --- build UI first ---
         container = FrameLayout(this).apply {
             setBackgroundColor(Color.BLACK)
             layoutParams = FrameLayout.LayoutParams(
@@ -112,29 +96,22 @@ class PlayerActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 Gravity.CENTER
             )
-            // Handle taps for closing
             setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_UP) {
                     if (closeMethod == "single") {
-                        finish()
-                        true
+                        finish(); true
                     } else {
                         val now = SystemClock.elapsedRealtime()
                         if (now - lastTapMs <= doubleTapWindow) {
-                            finish()
-                            true
+                            finish(); true
                         } else {
-                            lastTapMs = now
-                            true
+                            lastTapMs = now; true
                         }
                     }
-                } else {
-                    false
-                }
+                } else false
             }
         }
 
-        // Video (behind overlays) — will be center-cropped in onPrepared
         videoView = VideoView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -144,9 +121,7 @@ class PlayerActivity : AppCompatActivity() {
         }
         container.addView(videoView)
 
-        // ===== Overlays =====
-
-        // Time (top-center)
+        // Time (top)
         timeText = TextView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -160,7 +135,7 @@ class PlayerActivity : AppCompatActivity() {
         }
         container.addView(timeText)
 
-        // Battery cluster (bottom-center)
+        // Battery cluster (bottom)
         val bottomCluster = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = FrameLayout.LayoutParams(
@@ -170,13 +145,11 @@ class PlayerActivity : AppCompatActivity() {
             ).apply { bottomMargin = dp(24) }
             gravity = Gravity.CENTER_HORIZONTAL
         }
-
         val circleBg = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = dp(999).toFloat()
             setColor(Color.parseColor("#1F1F1F"))
         }
-
         batteryIconText = TextView(this).apply {
             layoutParams = LinearLayout.LayoutParams(dp(56), dp(56))
             background = circleBg
@@ -184,7 +157,6 @@ class PlayerActivity : AppCompatActivity() {
             textSize = 24f
             setTextColor(Color.WHITE)
         }
-
         batteryPctText = TextView(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -195,16 +167,22 @@ class PlayerActivity : AppCompatActivity() {
             setTextColor(Color.WHITE)
             setShadowLayer(6f, 0f, 0f, Color.parseColor("#80000000"))
         }
-
         bottomCluster.addView(batteryIconText)
         bottomCluster.addView(batteryPctText)
         container.addView(bottomCluster)
 
         setContentView(container)
 
+        // Now it’s safe to hide system bars
+        enterImmersiveMode()
+
+        // Read persisted options AFTER building view (closeMethod affects tap handler semantics)
+        val prefs = getSharedPreferences("charging_prefs", MODE_PRIVATE)
+        durationMs = prefs.getInt("durationMs", -1)
+        closeMethod = prefs.getString("closeMethod", "single") ?: "single"
+
         playFromIntent(intent)
 
-        // Auto-dismiss timer (if configured)
         if (durationMs > 0) {
             autoFinishHandler.postDelayed({ try { finish() } catch (_: Throwable) {} }, durationMs.toLong())
         }
@@ -217,7 +195,7 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        enterImmersiveMode() // re-assert on resume
+        enterImmersiveMode()
         timeHandler.post(timeTick)
 
         val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
@@ -227,7 +205,7 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) enterImmersiveMode() // re-assert after focus changes
+        if (hasFocus) enterImmersiveMode()
     }
 
     override fun onPause() {
@@ -242,37 +220,26 @@ class PlayerActivity : AppCompatActivity() {
                 .getString("appliedVideoUrl", null)
 
         if (url.isNullOrBlank()) {
-            finish()
-            return
+            finish(); return
         }
 
         videoView.setVideoURI(Uri.parse(url))
         videoView.setOnPreparedListener { mp ->
             mp.isLooping = true
-
-            // When video size is known, center-crop to screen
             val vw = mp.videoWidth
             val vh = mp.videoHeight
-            if (vw > 0 && vh > 0) {
-                centerCropToScreen(vw, vh)
+            if (vw > 0 && vh > 0) centerCropToScreen(vw, vh)
+            mp.setOnVideoSizeChangedListener { _, w, h ->
+                if (w > 0 && h > 0) centerCropToScreen(w, h)
             }
-
-            // Also recalc if decoder reports a size change mid-playback
-            mp.setOnVideoSizeChangedListener { _, width, height ->
-                if (width > 0 && height > 0) {
-                    centerCropToScreen(width, height)
-                }
-            }
-
             videoView.start()
         }
         videoView.setOnErrorListener { _, _, _ ->
-            finish()
-            true
+            finish(); true
         }
     }
 
-    /** Hide system bars in a sticky way so the animation fully covers the display. */
+    /** Hide system bars so the animation fully covers the display. */
     private fun enterImmersiveMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val controller = window.insetsController ?: return
@@ -281,7 +248,8 @@ class PlayerActivity : AppCompatActivity() {
                 WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         } else {
             @Suppress("DEPRECATION")
-            container.systemUiVisibility =
+            val target: View = if (::container.isInitialized) container else window.decorView
+            target.systemUiVisibility =
                 (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                         or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -291,10 +259,6 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Resize the VideoView so the video covers the entire screen (center-crop).
-     * Keeps aspect ratio; one dimension may extend beyond the screen to avoid letterboxing.
-     */
     private fun centerCropToScreen(videoWidth: Int, videoHeight: Int) {
         val dm: DisplayMetrics = resources.displayMetrics
         val screenW = dm.widthPixels.toFloat()
