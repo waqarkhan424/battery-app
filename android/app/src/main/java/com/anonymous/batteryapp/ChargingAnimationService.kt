@@ -26,7 +26,7 @@ class ChargingAnimationService : Service() {
     private var lastLaunchMs: Long = 0L
     private val launchCooldownMs = 2500L
 
-    // NEW: one-launch-per-plug session latch
+    // one-launch-per-plug session latch
     private var playedThisCharge = false
     private var wasCharging = false
 
@@ -146,15 +146,15 @@ class ChargingAnimationService : Service() {
             }
         }
 
-        val contentIntent = if (!appliedVideoUrl.isNullOrBlank()) {
-            Intent(this, PlayerActivity::class.java).apply {
-                putExtra("videoUrl", appliedVideoUrl!!)
-            }
-        } else {
-            Intent(this, MainActivity::class.java).apply {
-                action = Intent.ACTION_MAIN
-                addCategory(Intent.CATEGORY_LAUNCHER)
-            }
+        // Always open the app's home/Library screen when tapping the notification  <<< CHANGED
+        val contentIntent = Intent(this, MainActivity::class.java).apply {
+            action = Intent.ACTION_MAIN
+            addCategory(Intent.CATEGORY_LAUNCHER)
+            addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                Intent.FLAG_ACTIVITY_SINGLE_TOP
+            )
         }
 
         val piFlags =
@@ -167,10 +167,10 @@ class ChargingAnimationService : Service() {
 
         return NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("Charging animation enabled")
-            .setContentText("Will auto-play when you plug in your phone")
+            .setContentTitle("Charging animation enabled")            // <<< CHANGED
+            .setContentText("Go to app settings to stop the service") // <<< CHANGED
             .setOngoing(true)
-            .setContentIntent(pendingIntent)
+            .setContentIntent(pendingIntent) // tap → Library/home
             .build()
     }
 
