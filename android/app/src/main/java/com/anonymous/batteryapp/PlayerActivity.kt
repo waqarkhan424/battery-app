@@ -147,16 +147,10 @@ class PlayerActivity : AppCompatActivity() {
             // Center items vertically & horizontally in the row
             gravity = Gravity.CENTER
         }
-        val circleBg = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = dp(999).toFloat()
-            setColor(Color.parseColor("#1F1F1F"))
-        }
 
         // NEW: ImageView for the icon (replaces emoji TextView)
         batteryIconView = ImageView(this).apply {
             layoutParams = LinearLayout.LayoutParams(dp(56), dp(56))
-            background = circleBg
             scaleType = ImageView.ScaleType.CENTER_INSIDE
             // Initial icon + tint; will be updated by receiver
             setImageResource(R.drawable.ic_battery_full)
