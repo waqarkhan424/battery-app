@@ -11,6 +11,7 @@ const { ChargingServiceModule } = NativeModules as {
   };
 };
 
+
 export default function VideoPlayer() {
   const { videoUrl } = useLocalSearchParams<{ videoUrl: string }>();
   const [showSettingsModal, setShowSettingsModal] = useState(false);
