@@ -1,7 +1,7 @@
 import { useSettingsStore } from '@/store/settings';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -35,6 +35,19 @@ export default function ApplySettingsModal({ visible, onClose, onApply, videoUrl
   const insets = useSafeAreaInsets();
 
   const setAppliedAnimation = useSettingsStore((state) => state.setAppliedAnimation);
+
+  // read & write remembered selections from store (persisted)
+  const lastDurationLabel = useSettingsStore((s) => s.lastDurationLabel);
+  const lastCloseLabel = useSettingsStore((s) => s.lastCloseLabel);
+  const setLastOptions = useSettingsStore((s) => s.setLastOptions);
+
+  // whenever the modal opens, initialize from remembered selections
+  useEffect(() => {
+    if (visible) {
+      setDuration(lastDurationLabel);
+      setCloseMethod(lastCloseLabel);
+    }
+  }, [visible, lastDurationLabel, lastCloseLabel]);
 
   if (!visible) return null;
 
@@ -147,6 +160,10 @@ export default function ApplySettingsModal({ visible, onClose, onApply, videoUrl
                   setAppliedAnimation(videoUrl);
                   const durationMs = toDurationMs(duration);
                   const method = toCloseMethod(closeMethod);
+
+                  // remember the user’s choices for next time
+                  setLastOptions(duration, closeMethod);
+
                   onApply(durationMs, method);
                 }}
                 className="flex-1 ml-2 bg-cyan-400 rounded-xl py-2 items-center"
