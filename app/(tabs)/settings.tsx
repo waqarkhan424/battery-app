@@ -133,14 +133,12 @@ export default function SettingsScreen() {
           <LinkRow
             icon={<Feather name="file-text" size={18} color="#22d3ee" />}
             label="Privacy Policy"
-            //  CHANGE #1 — point this to your hosted Privacy Policy
-            onPress={() => Linking.openURL('https://your-domain.com/privacy.html')}
+            onPress={() => Linking.openURL('https://waqarkhan424.github.io/battery-legal/privacy.html')}
           />
           <LinkRow
             icon={<Feather name="file" size={18} color="#22d3ee" />}
             label="Terms & Conditions"
-            //  CHANGE #2 — point this to your hosted Terms
-            onPress={() => Linking.openURL('https://your-domain.com/terms.html')}
+            onPress={() => Linking.openURL('https://waqarkhan424.github.io/battery-legal/terms.html')}
             last
           />
         </View>
