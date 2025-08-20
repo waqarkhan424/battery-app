@@ -1,8 +1,9 @@
 import ApplySettingsModal from '@/components/apply-settings-modal';
 import PreviewActions from '@/components/preview-actions';
-import { router, useLocalSearchParams } from 'expo-router';
+import * as NavigationBar from 'expo-navigation-bar'; // + new import
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'; // + useFocusEffect
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useState } from 'react';
+import { useCallback, useState } from 'react'; // + useCallback
 import { NativeModules, View } from 'react-native';
 
 const { ChargingServiceModule } = NativeModules as {
@@ -11,10 +12,36 @@ const { ChargingServiceModule } = NativeModules as {
   };
 };
 
+// ---- Only addition: hide/show Android system nav bar while this screen is active ----
+async function hideSystemNavBar() {
+  try {
+    await NavigationBar.setBackgroundColorAsync('#00000000'); // transparent
+    await NavigationBar.setButtonStyleAsync('light');
+    await NavigationBar.setBehaviorAsync('overlay-swipe');    // swipe to reveal temporarily
+    await NavigationBar.setVisibilityAsync('hidden');         // hide 3-button bar
+  } catch {}
+}
+
+async function restoreSystemNavBar() {
+  try {
+    await NavigationBar.setBehaviorAsync('inset-swipe');
+    await NavigationBar.setVisibilityAsync('visible');
+  } catch {}
+}
 
 export default function VideoPlayer() {
   const { videoUrl } = useLocalSearchParams<{ videoUrl: string }>();
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  // + enter immersive on focus; restore on blur
+  useFocusEffect(
+    useCallback(() => {
+      hideSystemNavBar();
+      return () => {
+        restoreSystemNavBar();
+      };
+    }, [])
+  );
 
   if (!videoUrl) return null;
   const uri = decodeURIComponent(videoUrl);
