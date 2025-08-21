@@ -6,13 +6,18 @@
     "orientation": "portrait",
     "scheme": "batteryapp",
     "userInterfaceStyle": "automatic",
+    "icon": "./assets/images/launcher-icon.png",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.batteryapp"
+      "package": "com.anonymous.batteryapp",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/launcher-icon.png",
+        "backgroundColor": "#000000"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -22,7 +27,6 @@
       "expo-router",
       "expo-dev-client",
       "expo-splash-screen",
-
       [
         "expo-video",
         {
