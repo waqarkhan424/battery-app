@@ -166,7 +166,6 @@ class ChargingAnimationService : Service() {
         val pendingIntent = PendingIntent.getActivity(this, 0, contentIntent, piFlags)
 
         return NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_stat_notify)
             .setContentTitle("Charging animation enabled")            // <<< CHANGED
             .setContentText("Go to app settings to stop the service") // <<< CHANGED
             .setOngoing(true)
