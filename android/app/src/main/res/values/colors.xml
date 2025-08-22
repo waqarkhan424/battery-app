@@ -1,5 +1,6 @@
 <resources>
-  <color name="splashscreen_background">#FFFFFF</color>
+  <!-- Dark background for Android 12+ system splash & Expo splash -->
+    <color name="splashscreen_background">#0B0820</color>
   <color name="colorPrimary">#023c69</color>
   <color name="colorPrimaryDark">#ffffff</color>
 </resources>
