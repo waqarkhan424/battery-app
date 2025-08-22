@@ -7,13 +7,18 @@
     "scheme": "batteryapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
-    },
+
+    "icon": "./assets/logo.png",
+
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.batteryapp"
+      "package": "com.anonymous.batteryapp",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#0B0820"
+      }
     },
+
     "web": {
       "bundler": "metro",
       "output": "static"
