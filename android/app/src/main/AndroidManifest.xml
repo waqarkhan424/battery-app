@@ -1,7 +1,11 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-  <!-- Required app permissions -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.anonymous.batteryapp">
+
+  <!-- Required -->
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+  <!-- Foreground service for playback -->
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
 
@@ -14,31 +18,25 @@
     android:theme="@style/AppTheme"
     android:supportsRtl="true">
 
+    <!-- Updates disabled in dev build (keep as you had) -->
     <meta-data android:name="expo.modules.updates.ENABLED" android:value="false"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
 
-    <!-- SplashActivity is the launcher activity -->
+    <!-- SplashActivity is the single entry point: LAUNCHER + VIEW (batteryapp) -->
     <activity
       android:name=".SplashActivity"
       android:exported="true"
       android:screenOrientation="portrait"
       android:theme="@style/Theme.App.SplashScreen">
+
+      <!-- Launcher -->
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
-    </activity>
 
-    <!-- MainActivity handles deep links -->
-    <activity
-      android:name=".MainActivity"
-      android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode"
-      android:launchMode="singleTask"
-      android:windowSoftInputMode="adjustResize"
-      android:exported="true"
-      android:screenOrientation="portrait"
-      android:theme="@style/AppTheme">
+      <!-- Deep link for dev client & your app scheme (batteryapp://...) -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
@@ -47,7 +45,17 @@
       </intent-filter>
     </activity>
 
-    <!-- Other activities and services -->
+    <!-- Your existing RN activity (receives forwarded intent from SplashActivity) -->
+    <activity
+      android:name=".MainActivity"
+      android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode"
+      android:launchMode="singleTask"
+      android:windowSoftInputMode="adjustResize"
+      android:exported="true"
+      android:screenOrientation="portrait"
+      android:theme="@style/AppTheme" />
+
+    <!-- Tiny native fullscreen player for plug-in events -->
     <activity
       android:name=".PlayerActivity"
       android:exported="false"
@@ -57,6 +65,7 @@
       android:showWhenLocked="true"
       android:theme="@style/AppTheme" />
 
+    <!-- Foreground service (correct type for video playback) -->
     <service
       android:name=".ChargingAnimationService"
       android:exported="false"

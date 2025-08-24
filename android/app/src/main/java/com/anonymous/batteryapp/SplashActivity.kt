@@ -7,18 +7,19 @@ import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 
 class SplashActivity : AppCompatActivity() {
-    // How long to keep the splash screen visible
+
+    // How long to keep spinner + text visible (tweak as you like)
     private val SPLASH_DURATION_MS = 900L
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Use your app theme after the system splash screen
-        setTheme(R.style.AppTheme)
+        // Android 12+ shows the system splash for this Activity first.
+        // Then we render our custom layout below.
+        setTheme(R.style.AppTheme)  // switch to normal theme for our layout
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        // Delay to show your custom splash layout, then start MainActivity
         Handler(Looper.getMainLooper()).postDelayed({
-            // Forward the original intent’s action and data (for deep links)
+            // Forward the original intent’s action and data (supports batteryapp:// dev links)
             val startIntent = Intent(this, MainActivity::class.java).apply {
                 action = intent.action
                 data = intent.data
