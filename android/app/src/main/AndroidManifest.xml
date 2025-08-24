@@ -1,12 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
   <!-- Required -->
-  <uses-permission android:name="android.permission.INTERNET"/>
-  <uses-permission android:name="android.permission.WAKE_LOCK"/>
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
 
   <!-- Foreground service for playback -->
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
   <application
     android:name=".MainApplication"
@@ -17,23 +17,33 @@
     android:theme="@style/AppTheme"
     android:supportsRtl="true">
 
-    <meta-data android:name="expo.modules.updates.ENABLED" android:value="false"/>
-    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
-    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
+    <meta-data android:name="expo.modules.updates.ENABLED" android:value="false" />
+    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS" />
+    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0" />
 
-    <!-- NEW: SplashActivity is the launcher and uses the system Splash theme -->
+    <!-- Splash is the LAUNCHER and also accepts deep links (batteryapp://...) -->
     <activity
       android:name=".SplashActivity"
       android:exported="true"
       android:screenOrientation="portrait"
       android:theme="@style/Theme.App.SplashScreen">
+
+      <!-- Launcher -->
       <intent-filter>
-        <action android:name="android.intent.action.MAIN"/>
-        <category android:name="android.intent.category.LAUNCHER"/>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+
+      <!-- Deep-link entry for dev-client / QR open -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="batteryapp" />
       </intent-filter>
     </activity>
 
-    <!-- Your existing RN activity (not launcher anymore) -->
+    <!-- RN MainActivity (not launcher). Keep exported for dev-client. -->
     <activity
       android:name=".MainActivity"
       android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode"
@@ -41,7 +51,16 @@
       android:windowSoftInputMode="adjustResize"
       android:exported="true"
       android:screenOrientation="portrait"
-      android:theme="@style/AppTheme" />
+      android:theme="@style/AppTheme">
+
+      <!-- Optional: also allow deep links here (harmless + flexible) -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="batteryapp" />
+      </intent-filter>
+    </activity>
 
     <!-- Tiny native fullscreen player for plug-in events -->
     <activity

@@ -8,28 +8,44 @@ import androidx.appcompat.app.AppCompatActivity
 
 class SplashActivity : AppCompatActivity() {
 
-    // How long to keep spinner + text visible (tweak as you like)
+    // How long to keep spinner + text visible when launching from app icon
     private val SPLASH_DURATION_MS = 900L
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Android 12+ shows the system splash for this Activity first.
-        // Then we render our custom layout below.
-        setTheme(R.style.AppTheme)  // switch to normal theme for our layout
+        // System splash (Android 12+) shows first; then this theme/layout
+        setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            // Hand off to your existing RN MainActivity
-            val intent = Intent(this, MainActivity::class.java).apply {
-                action = Intent.ACTION_MAIN
-                addCategory(Intent.CATEGORY_LAUNCHER)
+        val incoming = intent
+
+        // Case 1: Opened via deep link (batteryapp://... from QR / Google Lens)
+        // Forward the SAME VIEW intent (keep action/data/categories) to MainActivity.
+        if (Intent.ACTION_VIEW == incoming.action && incoming.data != null) {
+            val forward = Intent(incoming).apply {
+                setClass(this@SplashActivity, MainActivity::class.java)
                 addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP
                 )
             }
-            startActivity(intent)
+            startActivity(forward)
+            finish()
+            return
+        }
+
+        // Case 2: Normal launcher tap → show splash briefly, then open RN activity.
+        Handler(Looper.getMainLooper()).postDelayed({
+            val next = Intent(this, MainActivity::class.java).apply {
+                // Do NOT overwrite action/categories here.
+                addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+                )
+            }
+            startActivity(next)
             finish()
         }, SPLASH_DURATION_MS)
     }
