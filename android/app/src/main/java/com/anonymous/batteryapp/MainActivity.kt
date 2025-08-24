@@ -4,7 +4,6 @@ import expo.modules.splashscreen.SplashScreenManager
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
-import android.content.Intent  // <-- add this import
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -15,6 +14,8 @@ import expo.modules.ReactActivityDelegateWrapper
 
 class MainActivity : ReactActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
+    // Make the activity visible & playable when launched from the service,
+    // even if the device is locked or the screen is off.
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
       setShowWhenLocked(true)
       setTurnScreenOn(true)
@@ -43,12 +44,6 @@ class MainActivity : ReactActivity() {
         fabricEnabled
       ) {}
     )
-  }
-
-  // >>> Ensure deep link is kept if activity is reused <<<
-  override fun onNewIntent(intent: Intent?) {
-    super.onNewIntent(intent)
-    if (intent != null) setIntent(intent)
   }
 
   override fun invokeDefaultOnBackPressed() {
