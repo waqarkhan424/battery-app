@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.anonymous.batteryapp">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
   <!-- Required -->
   <uses-permission android:name="android.permission.INTERNET"/>
@@ -18,43 +17,23 @@
     android:theme="@style/AppTheme"
     android:supportsRtl="true">
 
-    <!-- Updates disabled in dev build (keep as you had) -->
     <meta-data android:name="expo.modules.updates.ENABLED" android:value="false"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
 
-    <!-- SplashActivity is the single entry point: LAUNCHER + VIEW (batteryapp) -->
-    <activity
-      android:name=".SplashActivity"
-      android:exported="true"
-      android:screenOrientation="portrait"
-      android:launchMode="singleTask"
-      android:theme="@style/Theme.App.SplashScreen">
-
-      <!-- Launcher -->
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN"/>
-        <category android:name="android.intent.category.LAUNCHER"/>
-      </intent-filter>
-
-      <!-- Deep link for dev client & your app scheme (batteryapp://...) -->
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW"/>
-        <category android:name="android.intent.category.DEFAULT"/>
-        <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="batteryapp"/>
-      </intent-filter>
-    </activity>
-
-    <!-- Your existing RN activity (receives forwarded intent from SplashActivity) -->
     <activity
       android:name=".MainActivity"
       android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode"
       android:launchMode="singleTask"
       android:windowSoftInputMode="adjustResize"
+      android:theme="@style/Theme.App.SplashScreen"
       android:exported="true"
-      android:screenOrientation="portrait"
-      android:theme="@style/AppTheme" />
+      android:screenOrientation="portrait">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
 
     <!-- Tiny native fullscreen player for plug-in events -->
     <activity
