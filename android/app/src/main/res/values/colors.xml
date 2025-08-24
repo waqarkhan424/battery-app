@@ -1,5 +1,8 @@
 <resources>
-  <color name="splashscreen_background">#FFFFFF</color>
-  <color name="colorPrimary">#023c69</color>
-  <color name="colorPrimaryDark">#ffffff</color>
+    <!-- System splash + launcher background -->
+    <color name="splashscreen_background">#0f172a</color>  <!-- slate-900 -->
+
+    <!-- (Optional) keep your brand colors aligned -->
+    <color name="colorPrimary">#22d3ee</color>            <!-- cyan-400 -->
+    <color name="colorPrimaryDark">#0f172a</color>        <!-- slate-900 -->
 </resources>
