@@ -8,13 +8,12 @@
         tools:ignore="GoogleAppIndexingWarning"
         tools:replace="android:usesCleartextTraffic">
 
-        <!-- Dev-only deep link so Expo CLI can open the dev client with batteryapp:// -->
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="batteryapp"/>
+                <data android:scheme="charginganimation"/>
             </intent-filter>
         </activity>
     </application>
