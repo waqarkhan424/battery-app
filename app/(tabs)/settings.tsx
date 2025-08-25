@@ -3,7 +3,7 @@ import {
   Entypo,
   Feather,
   Ionicons,
-} from '@expo/vector-icons'; // removed unused MaterialCommunityIcons
+} from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
   Linking,
