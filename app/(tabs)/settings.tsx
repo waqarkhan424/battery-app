@@ -3,8 +3,7 @@ import {
   Entypo,
   Feather,
   Ionicons,
-  MaterialCommunityIcons,
-} from '@expo/vector-icons';
+} from '@expo/vector-icons'; // removed unused MaterialCommunityIcons
 import React, { useState } from 'react';
 import {
   Linking,
@@ -53,8 +52,8 @@ function ToggleRow({
           accessibilityState={{ checked: value }}
           className="pl-3"
         >
-          <MaterialCommunityIcons
-            name={value ? 'toggle-switch' : 'toggle-switch-off-outline'}
+          <Ionicons
+            name={value ? 'toggle' : 'toggle-outline'}
             size={40}
             color={value ? '#22d3ee' : '#94a3b8'}
           />
@@ -193,22 +192,23 @@ export default function SettingsScreen() {
                 Your feedback helps us improve.
               </Text>
 
-              {/* Buttons */}
-              <View className="mt-6 items-center">
+              {/* Buttons in one row */}
+              <View className="mt-6 flex-row items-center gap-3">
+                {/* Primary */}
                 <Pressable
                   onPress={async () => {
                     setShowRateModal(false);
                     await openPlayStore();
                   }}
-                  className="bg-cyan-400 rounded-2xl px-5 py-3 items-center active:opacity-90 w-full"
+                  className="flex-1 bg-cyan-400 rounded-2xl py-3 items-center active:opacity-90"
                 >
                   <Text className="text-slate-900 font-semibold">Rate now</Text>
                 </Pressable>
 
-                {/* Small secondary action */}
+                {/* Secondary (compact) */}
                 <Pressable
                   onPress={() => setShowRateModal(false)}
-                  className="mt-3 px-2 py-1"
+                  className="px-3 py-2 rounded-xl border border-slate-700 active:opacity-80"
                 >
                   <Text className="text-secondary text-xs">Not now</Text>
                 </Pressable>
