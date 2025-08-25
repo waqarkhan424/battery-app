@@ -18,7 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const PLAY_STORE_URL =
-  'https://play.google.com/store/apps/details?id=com.anonymous.batteryapp';
+  'https://play.google.com/store/apps/details?id=com.charginganimation';
 
 const { ChargingServiceModule } = NativeModules as {
   ChargingServiceModule: {
@@ -108,7 +108,7 @@ export default function SettingsScreen() {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: PLAY_STORE_URL, // share only the URL (removed "Check out this app")
+        message: PLAY_STORE_URL, // share only the URL
       });
     } catch {
       // optional: toast/snackbar if you have one
@@ -148,7 +148,7 @@ export default function SettingsScreen() {
           <LinkRow
             icon={<Entypo name="share" size={18} color="#22d3ee" />}
             label="Share"
-            onPress={handleShare} // <-- shares just the URL
+            onPress={handleShare}
           />
           <LinkRow
             icon={<Ionicons name="star-outline" size={18} color="#22d3ee" />}
@@ -178,7 +178,7 @@ export default function SettingsScreen() {
 
         {/* Footer badge */}
         <View className="items-center mt-6">
-          <Text className="text-secondary text-xs">battery-app • v1.0.0</Text>
+          <Text className="text-secondary text-xs">Charging Animation • v1.0.0</Text>
         </View>
       </ScrollView>
 
