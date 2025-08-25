@@ -11,6 +11,7 @@ import {
   NativeModules,
   Pressable,
   ScrollView,
+  Share,
   Text,
   View,
 } from 'react-native';
@@ -104,6 +105,16 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `Check out this app: ${PLAY_STORE_URL}`,
+      });
+    } catch {
+      // optional: toast/snackbar if you have one
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       {/* Header */}
@@ -137,7 +148,7 @@ export default function SettingsScreen() {
           <LinkRow
             icon={<Entypo name="share" size={18} color="#22d3ee" />}
             label="Share"
-            onPress={() => console.log('Share Pressed')}
+            onPress={handleShare} // <-- now works
           />
           <LinkRow
             icon={<Ionicons name="star-outline" size={18} color="#22d3ee" />}
