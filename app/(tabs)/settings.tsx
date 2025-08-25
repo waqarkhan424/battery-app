@@ -99,7 +99,7 @@ export default function SettingsScreen() {
 
   const openPlayStore = async () => {
     try {
-      await Linking.openURL(PLAY_STORE_URL); // use HTTPS only
+      await Linking.openURL(PLAY_STORE_URL); // HTTPS only
     } catch {
       // optional: toast/snackbar if you have one
     }
@@ -185,49 +185,34 @@ export default function SettingsScreen() {
           <View className="w-full max-w-md rounded-3xl p-[1px] bg-gradient-to-br from-cyan-400/40 via-sky-500/10 to-transparent">
             {/* Card */}
             <View className="bg-surface rounded-3xl p-6 border border-slate-800">
-              {/* Icon */}
-              <View className="items-center mb-2">
-                <MaterialCommunityIcons
-                  name="star-circle"
-                  size={56}
-                  color="#22d3ee"
-                />
-              </View>
-
-              {/* Title */}
+              {/* Title (simple, modern, no app name) */}
               <Text className="text-white text-xl font-bold text-center">
-                Enjoying Battery App?
+                Leave a quick rating
               </Text>
               <Text className="text-secondary text-sm text-center mt-1">
-                Let us know by leaving a 5-star review on Google Play.
+                Your feedback helps us improve.
               </Text>
 
               {/* Buttons */}
-              <View className="mt-6 gap-3">
+              <View className="mt-6 items-center">
                 <Pressable
                   onPress={async () => {
                     setShowRateModal(false);
                     await openPlayStore();
                   }}
-                  className="bg-cyan-400 rounded-2xl py-3 items-center active:opacity-90"
+                  className="bg-cyan-400 rounded-2xl px-5 py-3 items-center active:opacity-90 w-full"
                 >
-                  <Text className="text-slate-900 font-semibold">
-                    Rate on Play Store
-                  </Text>
+                  <Text className="text-slate-900 font-semibold">Rate now</Text>
                 </Pressable>
 
+                {/* Small secondary action */}
                 <Pressable
                   onPress={() => setShowRateModal(false)}
-                  className="bg-transparent border border-slate-700 rounded-2xl py-3 items-center active:opacity-80"
+                  className="mt-3 px-2 py-1"
                 >
-                  <Text className="text-secondary">Maybe later</Text>
+                  <Text className="text-secondary text-xs">Not now</Text>
                 </Pressable>
               </View>
-
-              {/* Tiny note */}
-              <Text className="text-[11px] text-secondary text-center mt-3">
-                You’ll pick your rating on Google Play after this step.
-              </Text>
             </View>
           </View>
         </View>
