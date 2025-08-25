@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "battery-app",
-    "slug": "battery-app",
+    "name": "Charging Animation",
+    "slug": "charging-animation",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "batteryapp",
+    "scheme": "charginganimation",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.batteryapp"
+      "package": "com.charginganimation"
     },
     "web": {
       "bundler": "metro",
