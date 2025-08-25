@@ -5,10 +5,10 @@ import {
   Ionicons,
   MaterialCommunityIcons,
 } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  Alert,
   Linking,
+  Modal,
   NativeModules,
   Pressable,
   ScrollView,
@@ -94,24 +94,15 @@ function LinkRow({
 export default function SettingsScreen() {
   const { enableAnimations, setEnableAnimations } = useSettingsStore();
 
-  const handleRatePress = () => {
-    Alert.alert(
-      'Rate us',
-      'How do you like our app?\nLet us know by leaving 5 stars on Google Play.',
-      [
-        { text: 'Not now', style: 'cancel' },
-        {
-          text: 'Rate now',
-          onPress: () => {
-            Linking.openURL(PLAY_STORE_URL).catch(() => {
-              // Fallback (optional): show a small message if opening fails
-              Alert.alert('Error', 'Could not open Google Play.');
-            });
-          },
-        },
-      ],
-      { cancelable: true }
-    );
+  // Rating confirmation modal (no star capture)
+  const [showRateModal, setShowRateModal] = useState(false);
+
+  const openPlayStore = async () => {
+    try {
+      await Linking.openURL(PLAY_STORE_URL); // use HTTPS only
+    } catch {
+      // optional: toast/snackbar if you have one
+    }
   };
 
   return (
@@ -152,7 +143,7 @@ export default function SettingsScreen() {
           <LinkRow
             icon={<Ionicons name="star-outline" size={18} color="#22d3ee" />}
             label="Rate"
-            onPress={handleRatePress}
+            onPress={() => setShowRateModal(true)}
           />
           <LinkRow
             icon={<Feather name="file-text" size={18} color="#22d3ee" />}
@@ -180,6 +171,67 @@ export default function SettingsScreen() {
           <Text className="text-secondary text-xs">battery-app • v1.0.0</Text>
         </View>
       </ScrollView>
+
+      {/* Modern confirmation modal */}
+      <Modal
+        transparent
+        visible={showRateModal}
+        animationType="fade"
+        onRequestClose={() => setShowRateModal(false)}
+      >
+        {/* Backdrop */}
+        <View className="flex-1 bg-black/60 justify-center items-center px-6">
+          {/* Subtle gradient frame */}
+          <View className="w-full max-w-md rounded-3xl p-[1px] bg-gradient-to-br from-cyan-400/40 via-sky-500/10 to-transparent">
+            {/* Card */}
+            <View className="bg-surface rounded-3xl p-6 border border-slate-800">
+              {/* Icon */}
+              <View className="items-center mb-2">
+                <MaterialCommunityIcons
+                  name="star-circle"
+                  size={56}
+                  color="#22d3ee"
+                />
+              </View>
+
+              {/* Title */}
+              <Text className="text-white text-xl font-bold text-center">
+                Enjoying Battery App?
+              </Text>
+              <Text className="text-secondary text-sm text-center mt-1">
+                Let us know by leaving a 5-star review on Google Play.
+              </Text>
+
+              {/* Buttons */}
+              <View className="mt-6 gap-3">
+                <Pressable
+                  onPress={async () => {
+                    setShowRateModal(false);
+                    await openPlayStore();
+                  }}
+                  className="bg-cyan-400 rounded-2xl py-3 items-center active:opacity-90"
+                >
+                  <Text className="text-slate-900 font-semibold">
+                    Rate on Play Store
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setShowRateModal(false)}
+                  className="bg-transparent border border-slate-700 rounded-2xl py-3 items-center active:opacity-80"
+                >
+                  <Text className="text-secondary">Maybe later</Text>
+                </Pressable>
+              </View>
+
+              {/* Tiny note */}
+              <Text className="text-[11px] text-secondary text-center mt-3">
+                You’ll pick your rating on Google Play after this step.
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
