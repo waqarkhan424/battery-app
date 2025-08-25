@@ -108,7 +108,7 @@ export default function SettingsScreen() {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Check out this app: ${PLAY_STORE_URL}`,
+        message: PLAY_STORE_URL, // share only the URL (removed "Check out this app")
       });
     } catch {
       // optional: toast/snackbar if you have one
@@ -148,7 +148,7 @@ export default function SettingsScreen() {
           <LinkRow
             icon={<Entypo name="share" size={18} color="#22d3ee" />}
             label="Share"
-            onPress={handleShare} // <-- now works
+            onPress={handleShare} // <-- shares just the URL
           />
           <LinkRow
             icon={<Ionicons name="star-outline" size={18} color="#22d3ee" />}
