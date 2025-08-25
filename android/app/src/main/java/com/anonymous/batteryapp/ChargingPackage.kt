@@ -1,4 +1,5 @@
-package com.anonymous.batteryapp
+package com.charginganimation
+
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.ReactApplicationContext
