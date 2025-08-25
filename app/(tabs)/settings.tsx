@@ -7,6 +7,7 @@ import {
 } from '@expo/vector-icons';
 import React from 'react';
 import {
+  Alert,
   Linking,
   NativeModules,
   Pressable,
@@ -15,6 +16,9 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+const PLAY_STORE_URL =
+  'https://play.google.com/store/apps/details?id=com.anonymous.batteryapp';
 
 const { ChargingServiceModule } = NativeModules as {
   ChargingServiceModule: {
@@ -90,6 +94,26 @@ function LinkRow({
 export default function SettingsScreen() {
   const { enableAnimations, setEnableAnimations } = useSettingsStore();
 
+  const handleRatePress = () => {
+    Alert.alert(
+      'Rate us',
+      'How do you like our app?\nLet us know by leaving 5 stars on Google Play.',
+      [
+        { text: 'Not now', style: 'cancel' },
+        {
+          text: 'Rate now',
+          onPress: () => {
+            Linking.openURL(PLAY_STORE_URL).catch(() => {
+              // Fallback (optional): show a small message if opening fails
+              Alert.alert('Error', 'Could not open Google Play.');
+            });
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       {/* Header */}
@@ -128,17 +152,25 @@ export default function SettingsScreen() {
           <LinkRow
             icon={<Ionicons name="star-outline" size={18} color="#22d3ee" />}
             label="Rate"
-            onPress={() => console.log('Rate Pressed')}
+            onPress={handleRatePress}
           />
           <LinkRow
             icon={<Feather name="file-text" size={18} color="#22d3ee" />}
             label="Privacy Policy"
-            onPress={() => Linking.openURL('https://waqarkhan424.github.io/battery-legal/privacy.html')}
+            onPress={() =>
+              Linking.openURL(
+                'https://waqarkhan424.github.io/battery-legal/privacy.html'
+              )
+            }
           />
           <LinkRow
             icon={<Feather name="file" size={18} color="#22d3ee" />}
             label="Terms & Conditions"
-            onPress={() => Linking.openURL('https://waqarkhan424.github.io/battery-legal/terms.html')}
+            onPress={() =>
+              Linking.openURL(
+                'https://waqarkhan424.github.io/battery-legal/terms.html'
+              )
+            }
             last
           />
         </View>
