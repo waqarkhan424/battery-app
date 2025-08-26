@@ -1,15 +1,18 @@
 {
   "expo": {
-    "name": "Charging Animation",
-    "slug": "charging-animation",
+    "name": "battery-app",
+    "slug": "battery-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "charginganimation",
+    "scheme": "batteryapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.charginganimation"
+      "package": "com.anonymous.batteryapp"
     },
     "web": {
       "bundler": "metro",
@@ -19,6 +22,7 @@
       "expo-router",
       "expo-dev-client",
       "expo-splash-screen",
+
       [
         "expo-video",
         {
@@ -32,9 +36,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "9ee2afe7-d1d3-4b53-96cf-8eda96481974"
+        "projectId": "37c7f23e-a85f-4617-a1a9-d04a53be7300"
       }
     },
-    "owner": "waqar424"
+    "owner": "waqar-424"
   }
 }
