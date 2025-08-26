@@ -1,5 +1,4 @@
-package com.charginganimation
-
+package com.anonymous.batteryapp
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -83,8 +82,7 @@ class ChargingAnimationService : Service() {
 
             val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
             @Suppress("WakelockTimeout")
-            val wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "charginganimation:chargeWake")
-
+            val wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "batteryapp:chargeWake")
 
             try { wl.acquire(5_000) } catch (_: Throwable) {}
 

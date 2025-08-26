@@ -1,4 +1,4 @@
-package com.charginganimation
+package com.anonymous.batteryapp
 
 import android.app.Application
 import android.content.res.Configuration
@@ -16,8 +16,7 @@ import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
 
 // import your custom package
-import com.charginganimation.ChargingPackage
-
+import com.anonymous.batteryapp.ChargingPackage
 
 class MainApplication : Application(), ReactApplication {
 

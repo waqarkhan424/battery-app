@@ -1,4 +1,4 @@
-package com.charginganimation
+package com.anonymous.batteryapp
 
 import android.content.Intent
 import android.content.Context

@@ -1,4 +1,4 @@
-package com.charginganimation
+package com.anonymous.batteryapp
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
