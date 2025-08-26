@@ -40,7 +40,6 @@ class MainApplication : Application(), ReactApplication {
   override val reactHost: ReactHost
     get() = ReactNativeHostWrapper.createReactHost(applicationContext, reactNativeHost)
 
-
   override fun onCreate() {
     super.onCreate()
     SoLoader.init(this, OpenSourceMergedSoMapping)
