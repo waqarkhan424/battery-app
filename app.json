@@ -7,9 +7,6 @@
     "scheme": "batteryapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
       "edgeToEdgeEnabled": true,
       "package": "com.anonymous.batteryapp"
@@ -22,7 +19,6 @@
       "expo-router",
       "expo-dev-client",
       "expo-splash-screen",
-
       [
         "expo-video",
         {
@@ -36,9 +32,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "37c7f23e-a85f-4617-a1a9-d04a53be7300"
+        "projectId": "9ee2afe7-d1d3-4b53-96cf-8eda96481974"
       }
     },
-    "owner": "waqar-424"
+    "owner": "waqar424"
   }
 }
