@@ -18,7 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const PLAY_STORE_URL =
-  'https://play.google.com/store/apps/details?id=com.charginganimation';
+  'https://play.google.com/store/apps/details?id=com.anonymous.batteryapp'
 
 const { ChargingServiceModule } = NativeModules as {
   ChargingServiceModule: {
