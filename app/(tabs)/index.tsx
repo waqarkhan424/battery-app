@@ -9,7 +9,20 @@ import {
   View,
 } from 'react-native';
 
-const CATEGORIES = ['animal', 'cartoon', 'circle'] as const;
+const CATEGORIES = [
+  'animal',
+  'cartoon',
+  'circle',
+  'emoji',
+  'festive',
+  'nature',
+  'neon',
+  'sports',
+  'tech',
+  'travel',
+  'abstract',
+] as const;
+
 type Category = typeof CATEGORIES[number];
 
 export default function LibraryScreen() {
