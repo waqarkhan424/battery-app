@@ -111,9 +111,14 @@ android {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.debug
-            shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
-            minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+
+            // Read the exact flags the Expo plugin sets in app.json
+            minifyEnabled ((findProperty('android.enableMinifyInReleaseBuilds') ?: false).toBoolean())
+            shrinkResources ((findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: false).toBoolean())
+
+            // Use the optimized default proguard file + your rules
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+
             crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
         }
     }
